@@ -5,6 +5,6 @@
 
 require_once('class.implements.php');
 
-class WEP_Discord implements WEP_Const {
+class WDEP_Discord implements WDEP_Const {
   
 }

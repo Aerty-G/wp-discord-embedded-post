@@ -5,6 +5,6 @@
 
 require_once('class.implements.php');
 
-class WEP_Helper implements WEP_Const {
+class WDEP_Helper implements WDEP_Const {
   
 }
