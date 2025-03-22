@@ -5,7 +5,6 @@
  * @author      Aerty-G
  *
  * Plugin Name: Wp Discord Embedded Post
- * Plugin URI:  https://developerhero.net/plugins/wp-discord-post-plus/
  * Description: A Discord integration that sends a message on your desired Discord server and channel for every new post published.
  *
  * Version:     0.0.1
