@@ -8,12 +8,5 @@ class WDEP_Database implements WDEP_Const {
 	  /* Silence is golden */ 
 	}
 	
-	public function Dashboard() {
-	  
-	}
-	
-	public function wp_enqueue() {
-	  
-	}
 	
 }

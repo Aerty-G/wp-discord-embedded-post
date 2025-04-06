@@ -1,0 +1,235 @@
+/* Base Container Styles */
+.wpdep-dashboard-widget {
+  padding: 20px;
+  background-color: #fff;
+  border: 1px solid #e5e5e5;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, .04);
+  margin-top: 20px;
+  max-width: 800px;
+}
+
+/* Option Blocks & Sections */
+.option-block,
+.embed-section,
+.embed-block,
+.category-option-block {
+  margin-bottom: 20px;
+  padding: 15px 20px;
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+}
+
+.embed-section {
+  background-color: #fff;
+  border-color: #e5e5e5;
+}
+
+/* Header Styles */
+.option-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+.option-header label {
+  flex-grow: 1;
+  margin-right: 10px;
+  font-weight: 600;
+}
+
+h2, h3, h4 {
+  color: #23282d;
+  margin-top: 0;
+}
+
+h3 {
+  margin-bottom: 10px;
+}
+
+/* Form Elements */
+.setting-group {
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.setting-group:last-child {
+  border-bottom: none;
+}
+
+.setting-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 600;
+}
+
+.widefat {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  margin-bottom: 5px;
+}
+
+textarea.widefat {
+  min-height: 60px;
+}
+
+/* Radio & Select Styles */
+.radio-options {
+  margin: 10px 0;
+}
+
+.radio-options label {
+  display: inline-block;
+  margin-right: 20px;
+  cursor: pointer;
+}
+
+/* Field Groups */
+.fields-container .field-group,
+.components-container .component-group,
+.connection-settings {
+  margin-bottom: 15px;
+  padding: 15px;
+  background-color: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+}
+
+/* Search & Select2 */
+.search-container {
+  margin-bottom: 20px;
+}
+
+.search-container input {
+  padding: 8px 12px;
+  font-size: 14px;
+}
+
+/* Select2 Overrides */
+.select2-container--default .select2-selection--multiple,
+.select2-container--default .select2-selection--single {
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  min-height: 30px;
+}
+
+.select2-container--default .select2-selection--multiple {
+  padding: 0 5px;
+}
+
+/* Helper Classes */
+.description {
+  color: #666;
+  font-style: italic;
+  font-size: 13px;
+  margin: 5px 0 0;
+}
+
+.section-description {
+  color: #666;
+  font-style: italic;
+  margin-bottom: 15px;
+}
+
+/* Form Actions */
+.form-actions {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #eee;
+  text-align: right;
+}
+
+/* Radio Options Styling */
+.mode-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 10px 0;
+}
+
+.mode-selector label {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin: 0;
+  position: relative;
+}
+
+.mode-selector label:hover {
+  background-color: #e5e5f5;
+}
+
+.mode-selector input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.mode-selector .radio-custom {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #2271b1;
+  border-radius: 50%;
+  margin-right: 8px;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.mode-selector input[type="radio"]:checked + .radio-custom::after {
+  content: "";
+  display: flex;
+  width: 70%;
+  height: 70%;
+  background: #2271b1;
+  border-radius: 50%;
+  position: absolute;
+  top: 15%;
+  left: 15%;
+}
+
+.mode-selector .radio-label {
+  margin-left: 5px;
+}
+
+
+
+/* Mobile-specific styles */
+@media (max-width: 782px) {
+  .mode-selector {
+    flex-direction: column;
+    gap: 5px;
+  }
+  
+  .mode-selector label {
+    width: 100%;
+    padding: 12px 15px;
+  }
+  
+  .option-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .option-header .mode-selector {
+    width: 100%;
+    margin-top: 10px;
+  }
+  
+  .option-header .remove-option {
+    margin-top: 10px;
+    
+    align-self: flex-end;
+  }
+}
