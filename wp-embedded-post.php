@@ -23,7 +23,7 @@ require_once( 'includes/class.implements.php' );
 define( 'WEP_IS_DEBUG', false );
 
 
-class WP_Discord_Embedded_Post implements WEP_Const {
+class WP_Discord_Embedded_Post implements WDEP_Const {
   protected static $_instance = null;
   public $option;
   
