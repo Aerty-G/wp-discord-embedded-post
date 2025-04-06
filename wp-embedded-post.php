@@ -46,12 +46,37 @@ class WP_Discord_Embedded_Post implements WDEP_Const {
 	  $this->option->Database = new WDEP_Database();
 	  $this->option->Helper = new WDEP_Helper();
 	  $this->option->Admin = new WDEP_Admin();
+	  add_action( 'transition_post_status', array( $this, 'PublishPostHook' ), 20, 3 );
 	}
 	
 	
 	public function SendToDiscord( array $data ) {
 	  $DC = new WDEP_Discord( $data );
 	  $DC->Send();
+	}
+	
+	public function PublishPostHook( $new_status, $old_status, $post ) {
+	   if ( $new_status === 'publish' && ( $old_status === 'draft' || $old_status === 'pending' || $old_status === 'future' ) ) {
+	     $suppres_post = isset( $_POST['wpdep_suppres_post'] ) && $_POST['wpdep_suppres_post'] !== 0;
+	     $post_id = $post->ID;
+	     $cat = wp_get_post_categories( $post_id );
+	     $data = array();
+       foreach ( $cat as $c ) {
+          $pre = $this->option->Helper->isCatNeedToPost( $c );
+          if ( $pre !== false ) {
+            $data[] = $pre;
+          }
+       }
+        
+       if ( empty($data) ) {
+          return;
+       }
+       
+       error_log( print_r( $data, true ) );
+       
+       $final_data = $this->option->Helper->ConstructRawDataCP( [ 'post_id' => $post_id, 'data' => $data ] );
+       
+	   }
 	}
 	
 }
