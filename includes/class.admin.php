@@ -884,10 +884,8 @@ class WDEP_Admin implements WDEP_Const {
             array(),
             '1.0.0'
         );
-       if ($hook === 'options-manager_page_wpdep-post-cat-manager') {
             wp_enqueue_style('select2', 'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css');
             wp_enqueue_script('select2', 'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js', array('jquery'));
-        }
 	}
 	
 	

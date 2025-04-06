@@ -18,7 +18,11 @@ class WDEP_Discord implements WDEP_Const {
 	  
 	}
 	
-	public function send() {
+	public function sendViaWebhooks() {
+	  
+	}
+	
+	public function sendViaBot() {
 	  
 	}
 	
