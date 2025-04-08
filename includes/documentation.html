@@ -1,0 +1,55 @@
+<div class="wpdep-dashboard-widget">
+  <h2>Plugin Documentation</h2>
+  
+  <div class="wpdep-documentation">
+    <div class="wpdep-doc-menu">
+      <ul class="wpdep-doc-nav">
+        <li><a href="#overview" class="active">Overview</a></li>
+        <li><a href="#variable-options">Variable Options</a></li>
+        <li><a href="#discord-settings">Discord Settings</a></li>
+        <li><a href="#embed-config">Embed Configuration</a></li>
+        <li><a href="#category-options">Category Options</a></li>
+        <li><a href="#templates">Template System</a></li>
+        <li><a href="#default-variable">Default Variable</a></li>
+        <li><a href="#faq">FAQ</a></li>
+      </ul>
+    </div>
+    
+    <div class="wpdep-doc-content">
+      <div id="overview" class="wpdep-doc-section active">
+        <h3>Plugin Overview</h3>
+        <p>This plugin provides comprehensive integration with Discord, allowing you to:</p>
+        <ul>
+          <li>Create dynamic variable options with different processing modes</li>
+          <li>Configure Discord connection via webhook or bot</li>
+          <li>Design rich embed messages with buttons</li>
+          <li>Set category-specific notification settings</li>
+        </ul>
+        
+        <div class="wpdep-doc-tip">
+          <strong>Tip:</strong> Start by configuring your Discord connection settings first.
+        </div>
+      </div>
+      
+      <div id="variable-options" class="wpdep-doc-section">
+        <h3>Variable Options Configuration</h3>
+        
+        <div class="wpdep-doc-feature">
+          <h4>Template Placeholders</h4>
+          <p>Create template names that can be used as placeholders in your embeds and the main message in category settings:</p>
+          <pre><code>${template_name}$</code></pre>
+        </div>
+        
+        <div class="wpdep-doc-feature">
+          <h4>Processing Modes</h4>
+          <ul>
+            <li><strong>Single:</strong> Uses the first meta key's value</li>
+            <li><strong>Combine:</strong> Joins all values with separator</li>
+            <li><strong>Connect:</strong> Uses first value as post ID to get second value</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

@@ -52,7 +52,13 @@ class WDEP_Helper implements WDEP_Const {
 	public function RetrieveEmbedStyle( $id ) {
 	  $styles = get_option( self::EMBEDDED_STRUCT_LIST_OPT, array() );
 	  if ( empty( $styles ) ) return false;
-	  return isset( $styles[$id] ) ? $styles[$id] : false;
+	  return isset( $styles['embeded'][$id] ) ? $styles['embeded'][$id] : false;
+	}
+	
+	public function RetrieveEmbedButtonStyle( $id ) {
+	  $styles = get_option( self::EMBEDDED_STRUCT_LIST_OPT, array() );
+	  if ( empty( $styles ) ) return false;
+	  return isset( $styles['embeded_button'][$id] ) ? $styles['embeded_button'][$id] : false;
 	}
 	
 	public function FilteredAllVar( $data, $id ) {
@@ -63,7 +69,7 @@ class WDEP_Helper implements WDEP_Const {
 	  $vars = get_option( self::EMBEDDED_VAR_LIST_OPT, array() );
 	  if( empty( $vars ) ) return $string;
 	  foreach ( $vars as $var ) :
-	    switch ($var['mode']) : 
+	    switch ( $var['mode'] ) : 
 	      case 'single' :
 	        $vv = get_post_meta( $id, $var['keys'][0] );
 	        break;
