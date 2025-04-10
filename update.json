@@ -1,14 +1,12 @@
 {
-    "version": "0.0.1",
+    "version": "1.0.0",
     "requires": "7.4",
     "tested": "7.4",
-    "last_updated": "",
-    "download_url": "",
+    "last_updated": "2025-04-10",
+    "download_url": "https://github.com/Aerty-G/wp-discord-embedded-post/releases/download/v1.0.0/wp-embedded-post.zip",
     "changelog": {
-        "0.0.1": [
+        "1.0.0": [
             "Initial Release",
         ],
-    },
-    "banners": {
     }
 }
