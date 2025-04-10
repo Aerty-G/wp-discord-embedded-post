@@ -7,10 +7,11 @@
  * Plugin Name: Wp Discord Embedded Post
  * Description: A Discord integration that sends a message on your desired Discord server and channel for every new post published.
  *
- * Version:     0.0.1
+ * Version:     1.0.0
  * Author:      Aerty-G
- * Author URI:  https://aerty.my.id
- * Text Domain: wp-discord-embedded-post
+ * Author URI:  https://github.com/Aerty-G
+ * Plugin URI: https://github.com/Aerty-G/wp-discord-embedded-post
+ * Requires PHP: 7.4
  */
  
  if ( ! defined( 'ABSPATH' ) ) {
@@ -38,21 +39,21 @@ class WP_Discord_Embedded_Post implements WDEP_Const {
 	public function __construct() {
 	  /* Silence is golden */ 
 	  require_once( 'includes/class.implements.php' );
-	  require_once( 'includes/class.database.php' );
 	  require_once( 'includes/class.admin.php' );
     require_once( 'includes/class.discord.php' );
     require_once( 'includes/class.helper.php' );
+    require_once( 'includes/class.plugin-update.php' );
 	  $this->option = new stdClass();
-	  $this->option->Database = new WDEP_Database();
 	  $this->option->Helper = new WDEP_Helper();
 	  $this->option->Admin = new WDEP_Admin();
+	  $this->option->Updater = new WPDEP_Updater();
 	  add_action( 'transition_post_status', array( $this, 'PublishPostHook' ), 20, 3 );
 	}
 	
 	
 	public function SendToDiscord( array $data ) {
 	  $DC = new WDEP_Discord( $data );
-	  $DC->Send();
+	  $response = $DC->Send();
 	}
 	
 	public function PublishPostHook( $new_status, $old_status, $post ) {
@@ -72,10 +73,9 @@ class WP_Discord_Embedded_Post implements WDEP_Const {
           return;
        }
        
-       error_log( print_r( $data, true ) );
-       
        $final_data = $this->option->Helper->ConstructRawDataCP( [ 'post_id' => $post_id, 'data' => $data ] );
-       
+       if (!$final_data) return;
+       $this->SendToDiscord($final_data);
 	   }
 	}
 	
