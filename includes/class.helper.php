@@ -160,7 +160,7 @@ class WDEP_Helper implements WDEP_Const {
       $arg = $matches[1];
       if (count($arg) >= 4) :
         if (strpos(trim($arg[0]), ',') !== false) return $string;
-        $term = get_the_term_list($post->ID, $arg[0], $arg[1], $arg[2], $arg[3]);
+        $term = $this->get_direct_term_list($arg);
         if(isset($arg[4]) && $arg[4] === 1 ) {
           $term = strip_tags($term);
         }
@@ -214,6 +214,9 @@ class WDEP_Helper implements WDEP_Const {
 	      case 'post_name' :
 	        $string = str_replace('${'.$template.'}$', $post->post_name, $string);
 	        break;
+	      case 'post_content' :
+	        $string = str_replace('${'.$template.'}$', $post->post_content, $string);
+	        break;
 	      case 'default_tag' :
 	        $defaultsetarray = get_option(self::DEFAULT_SET_LIST_OPT, array());
           $default_tag = $defaultsetarray['default_tag'] ?? '';
@@ -226,6 +229,17 @@ class WDEP_Helper implements WDEP_Const {
   	  endswitch;
   	  return $string;
     }
+	}
+	
+	public function get_direct_term_list($arg) {
+	  global $post;
+	  if (is_numeric($arg[0])) {
+	    return get_the_term_list($post->ID, $arg[0], $arg[1], $arg[2], $arg[3]);
+	  } else {
+	    $post_id = get_post_meta($post->ID, $arg[0], true);
+	    if (empty($post_id)) return '';
+	    return get_the_term_list($post_id, $arg[0], $arg[1], $arg[2], $arg[3]);
+	  }
 	}
 	
 	public function get_direct_post_info_value($arg) {
@@ -267,10 +281,17 @@ class WDEP_Helper implements WDEP_Const {
 	      case 'post_category' :
 	        $value = $post->post_category;
 	        break;
+	      case 'thumbnail_url' :
+	        $value = get_the_post_thumbnail_url($post->ID);
+	        break;
+	      case 'permalink' :
+	        $value = get_permalink($post->ID);
+	        break;
 	    }
 	    return $value;
 	  } elseif(is_numeric($post_id)) {
 	    $post = get_post($post_id);
+	    if (!$post) return $value;
 	    switch ($info) {
 	      case 'ID' :
 	        $value = $post->ID;
@@ -301,6 +322,12 @@ class WDEP_Helper implements WDEP_Const {
 	        break;
 	      case 'post_category' :
 	        $value = $post->post_category;
+	        break;
+	      case 'thumbnail_url' :
+	        $value = get_the_post_thumbnail_url($post->ID);
+	        break;
+	      case 'permalink' :
+	        $value = get_permalink($post->ID);
 	        break;
 	    }
 	    return $value;
@@ -309,6 +336,7 @@ class WDEP_Helper implements WDEP_Const {
 	    $post_id = get_post_meta($post->ID, $post_id, true);
 	    if (!is_numeric($post_id) || empty($post_id)) return $value;
 	    $post = get_post($post_id);
+	    if (!$post) return $value;
 	    switch ($info) {
 	      case 'ID' :
 	        $value = $post->ID;
@@ -339,6 +367,12 @@ class WDEP_Helper implements WDEP_Const {
 	        break;
 	      case 'post_category' :
 	        $value = $post->post_category;
+	        break;
+	      case 'thumbnail_url' :
+	        $value = get_the_post_thumbnail_url($post->ID);
+	        break;
+	      case 'permalink' :
+	        $value = get_permalink($post->ID);
 	        break;
 	    }
 	    return $value;

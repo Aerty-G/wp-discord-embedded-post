@@ -6,11 +6,6 @@
       <ul class="wpdep-doc-nav">
         <li><a href="#overview" class="active">Overview</a></li>
         <li><a href="#variable-options">Variable Options</a></li>
-        <li><a href="#discord-settings">Discord Settings</a></li>
-        <li><a href="#embed-config">Embed Configuration</a></li>
-        <li><a href="#category-options">Category Options</a></li>
-        <li><a href="#templates">Template System</a></li>
-        <li><a href="#default-variable">Default Variable</a></li>
         <li><a href="#faq">FAQ</a></li>
       </ul>
     </div>
@@ -65,7 +60,50 @@
           <h4>Defaults Placeholder</h4>
           <p>Here's The List Of All Defaults Placeholder.</p>
           <ul>
-            <li></li>
+            <li><code>${author}$</code>: To Showing Author Of Current Post.</li>
+            <li><code>${timestamp}$</code>: To Showing Timestamp Of Current Post, in Discord Format.</li>
+            <li><code>${permalink}$</code>: To Showing Permalink Of Current Post.</li>
+            <li><code>${thumbnail_url}$</code>: To Showing Thumbnails Url Of Current Post.</li>
+            <li><code>${post_title}$</code>: To Showing Title Of Current Post.</li>
+            <li><code>${post_type}$</code>: To Showing Status Of Current Post, Like Published, Draft, Future.</li>
+            <li><code>${post_name}$</code>: To Showing Slug Of Current Post.</li>
+            <li><code>${post_content}$</code>: To Showing Content Of Current Post.</li>
+            <li><code>${default_tag}$</code>: To Showing Default Tag You Set in The Default Settings.</li>
+          </ul>
+        </div>
+        
+        <div class="wpdep-doc-feature">
+          <h4>Dynamic Post Info Placeholders</h4>
+          <p>By using this you can retrieve information from posts either the current post, or a post with a certain ID, or even a post from the id that is in the meta in the current post.</p>
+          <pre><code>${get_post_info => [id/meta_key],[info]}$</code></pre>
+          <ul>
+            <li><strong>ID/Meta_Key:</strong> This section if you fill it with the ID of a post it will retrieve information based on the ID, but if you fill it with meta_key it will retrieve the meta value based on the current post ID then the value will be the basis for retrieving the post information, then if you leave it blank it will retrieve the ID of the current post.</li>
+            <li><strong>Info:</strong> in this section you fill it with the information you want to retrieve from the post based on the ID column earlier, the list will be below.</li>
+          </ul>
+          <ul>
+            <li><code>post_author</code>: To Get Post Author.</li>
+            <li><code>post_date</code>: To Get Publish Date Of The Post.</li>
+            <li><code>post_name</code>: To Get Post Title Slug.</li>
+            <li><code>post_content</code>: To Get Post Content.</li>
+            <li><code>post_title</code>: To Get Post Title.</li>
+            <li><code>post_status</code>: To Get Post Current Status.</li>
+            <li><code>post_type</code>: To Get Post Type.</li>
+            <li><code>post_category</code>: To Get Post Category.</li>
+            <li><code>thumbnail_url</code>: To Get Post Thumbnail Url.</li>
+            <li><code>permalink</code>: To Get Post Permalink.</li>
+          </ul>
+        </div>
+        
+        <div class="wpdep-doc-feature">
+          <h4>Dynamic Term Info Placeholders</h4>
+          <p></p>
+          <pre><code>${get_term_list => [taxonomy_name],[separator],[before],[after],[filter]}$</code></pre>
+          <ul>
+            <li><strong>Taxonomy_Name:</strong> .</li>
+            <li><strong>Separator:</strong> .</li>
+            <li><strong>Before:</strong> .</li>
+            <li><strong>After:</strong> .</li>
+            <li><strong>Filter:</strong> .</li>
           </ul>
         </div>
       </div>
