@@ -30,6 +30,21 @@
         <h3>Variable Placeholder Options Configuration</h3>
         
         <div class="wpdep-doc-feature">
+          <h4>Where can I use this placeholder?</h4>
+          <p>Almost all parts that can be filled can use this.</p>
+          <p>For more details where you can put it, please see the following.</p>
+          <ul>
+            <li>Main Message</li>
+            <li>Embedded In Author Name Section</li>
+            <li>Embedded In Title Section</li>
+            <li>Embedded In Description Section</li>
+            <li>Embedded In Name And Value Inside Fields Section</li>
+            <li>Embedded In label Inside Button Components Section</li>
+            <li>Embedded In Text Inside Footer Section</li>
+          </ul>
+        </div>
+        
+        <div class="wpdep-doc-feature">
           <h4>Template Placeholders</h4>
           <p>Create template names that can be used as placeholders in your embeds and the main message in category settings:</p>
           <pre><code>${template_name}$</code></pre>
@@ -97,13 +112,14 @@
         <div class="wpdep-doc-feature">
           <h4>Dynamic Term Info Placeholders</h4>
           <p></p>
-          <pre><code>${get_term_list => [taxonomy_name],[separator],[before],[after],[filter]}$</code></pre>
+          <pre><code>${get_term_list => [ID/meta_key],[taxonomy_name],[separator],[before],[after],[filter]}$</code></pre>
           <ul>
-            <li><strong>Taxonomy_Name:</strong> .</li>
-            <li><strong>Separator:</strong> .</li>
-            <li><strong>Before:</strong> .</li>
-            <li><strong>After:</strong> .</li>
-            <li><strong>Filter:</strong> .</li>
+            <li><strong>ID/Meta_Key:</strong> If you fill it with a Numeric Number, it will be taken as the ID to Retrieve the Term later, if you fill it with meta_key, it will retrieve the meta value based on the key with the current post ID then the meta value will be used as the ID to retrieve the term, if you leave it blank, it will take the current post ID as the ID to retrieve the term.</li>
+            <li><strong>Taxonomy_Name:</strong> The name of the taxonomy you will take.</li>
+            <li><strong>Separator:</strong> Separator between the terms that are retrieved later..</li>
+            <li><strong>Before:</strong> The string or html that is at the front of the list..</li>
+            <li><strong>After:</strong> The string at the end of the list..</li>
+            <li><strong>Filter:</strong> If you want to filter the results of the term list with strip_tags then please fill it with the number 1 if not leave it blank, then the list will be displayed as it is..</li>
           </ul>
         </div>
       </div>
