@@ -78,9 +78,16 @@ class WDEP_Discord implements WDEP_Const {
 	public function sendViaBot() {
 	  $channelId = $this->getChannelId();
 	  $url = "https://discord.com/api/v9/channels/{$channelId}/messages";
-	  $POSTX = ['content' => $this->option->current['main_message'],
-              'embeds' => [$this->option->current['embeded']['embeded']],
-              'components' => $this->option->current['embeded']['components']]; 
+	  $POSTX = [
+        'content' => $this->option->current['main_message'],
+        'embeds' => [ $this->option->current['embeded']['embeded'] ],
+        'components' => [
+            [
+                'type' => 1,
+                'components' => $this->option->current['embeded']['components']
+            ]
+        ]
+    ];
     $headers = [
       'Content-Type: application/json',
       'Authorization: Bot ' . $this->getBotToken(),

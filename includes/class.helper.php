@@ -6,9 +6,11 @@
 require_once('class.implements.php');
 
 class WDEP_Helper implements WDEP_Const {
-  
+  public $post_id = null;
+  public $post = null;
   public function __construct() {
 	  /* Silence is golden */ 
+	  
 	}
 	
 	public function isCatNeedToPost( $cat ) {
@@ -49,7 +51,7 @@ class WDEP_Helper implements WDEP_Const {
       'channel_id' => $channel_id,
       'options' => []
       ];
-	  global $post;
+	  $post = $this->post;
 	  $post_id = $post->ID;
 	  $data = $data['data'];
 	  foreach ( $data as $dat ) :
@@ -102,25 +104,35 @@ class WDEP_Helper implements WDEP_Const {
     endforeach;
     
     foreach ($embed['components'] as $component) :
-      if (isset($component['label'])) { 
-        if (empty($component['label']) || empty($component['url'])) continue;
-          $final['components'][] = [
-              'type' => 2,
-              'label' => $this->FilterVar($component['label']),
-              'url' => $component['url'],
-              'emoji' => [
-                  'id' => $component['emoji']['id'] ,
-                  'name' => $component['emoji']['name'] ,
-                  'animated' => $component['emoji']['animated']
-              ]
-          ];
-      }
+        if (isset($component['label'])) { 
+            if (empty($component['label']) || empty($component['url'])) continue;
+            $filteredLabel = $this->FilterVar($component['label']);
+            if (empty($filteredLabel)) {
+                $filteredLabel = $component['label'];
+            }
+            
+            $comp = [
+                'type' => 2,
+                'style' => 5,
+                'label' => $filteredLabel,
+                'url' => $component['url'],
+            ];
+            
+            if (isset($component['emoji']) && !empty($component['emoji']['id'])) {
+                $comp['emoji'] = [
+                    'id' => $component['emoji']['id'],
+                    'name' => $component['emoji']['name'],
+                    'animated' => $component['emoji']['animated']
+                ];
+            }
+            $final['components'][] = $comp;
+        }
     endforeach;
     return $final;
 	}
 	
 	private function getTimeStamp() {
-	  global $post;
+	  $post = $this->post;
 	  return get_post_time('Y-m-d\TH:i:s.v\Z', true, $post->ID);
 	}
 	
@@ -131,35 +143,41 @@ class WDEP_Helper implements WDEP_Const {
 	}
 	
 	public function FilterVar( $string, $id = '' ) {
-	  if (!$id || empty($id)) {
-	    global $post;
-	    $id = $post->ID;
-	  }
-	  $vars = get_option( self::EMBEDDED_VAR_LIST_OPT, array() );
-	  // if( empty( $vars ) ) return $string;
-	  if (preg_match_all('/\$\{([^}]+)\}\$/', $string, $matches) && $matches[0] > 0) :
-  	  foreach ($matches[1] as $t ) :
-    	  foreach ( $vars as $var ) :
-  	      if( isset($var['template'] ) && $var['template'] === $t ) :
-            $vv = $this->get_formatted_value($var);
-    	      $string = str_replace( '${'.$var['template'].'}$', ( empty( trim( $vv ) ) ? '${'.$var['template'].'}$' : $vv ), $string );
-    	      break;
-    	    endif;
-    	  endforeach;
-    	  $string = $this->FilterDefaultVar( $string, $t );
-    	endforeach;
-	  endif;
-	  return $string;
+	  $original = $string;
+	  try {
+  	  if (!$id || empty($id)) {
+  	    $post = $this->post;
+  	    $id = $post->ID;
+  	  }
+  	  $vars = get_option( self::EMBEDDED_VAR_LIST_OPT, array() );
+  	  // if( empty( $vars ) ) return $string;
+  	  if (preg_match_all('/\$\{([^}]+)\}\$/', $string, $matches) && $matches[0] > 0) :
+    	  foreach ($matches[1] as $t ) :
+    	    $string = $this->FilterDefaultVar( $string, $t );
+      	  foreach ( $vars as $var ) :
+    	      if( isset($var['template'] ) && $var['template'] === $t ) :
+              $vv = $this->get_formatted_value($var);
+      	      $string = str_replace( '${'.$var['template'].'}$', ( empty( trim( $vv ) ) ? '${'.$var['template'].'}$' : $vv ), $string );
+      	    endif;
+      	  endforeach;
+      	endforeach;
+  	  endif;
+  	  return $string;
+	  } catch (Exception $e) {
+       error_log('FilterVar error: ' . $e->getMessage());
+       return $original; 
+   }
 	}
 	
 	public function FilterDefaultVar( $string, $template ) {
-	  global $post;
+	  $post = $this->post;
 	  if ($post->ID === '') return $string;
 	  if (strpos(trim($template), 'get_term_list =>') === 0) {
       preg_match_all('/\[([^\]]*)\]/', $template, $matches);
       $arg = $matches[1];
-      if (count($arg) >= 4) :
+      if (count($arg) >= 5) :
         if (strpos(trim($arg[0]), ',') !== false) return $string;
+        if (strpos(trim($arg[1]), ',') !== false) return $string;
         $term = $this->get_direct_term_list($arg);
         if(isset($arg[4]) && $arg[4] === 1 ) {
           $term = strip_tags($term);
@@ -168,7 +186,7 @@ class WDEP_Helper implements WDEP_Const {
         $string = str_replace('${'.$template.'}$', $term, $string);
       endif;
       return $string;
-    } elseif (strpos(trim($template), 'get_post_meta =>') === 0) {
+    } if (strpos(trim($template), 'get_post_meta =>') === 0) {
       preg_match_all('/\[([^\]]*)\]/', $template, $matches);
       $arg = $matches[1];
       if (count($arg) === 3) :
@@ -179,7 +197,7 @@ class WDEP_Helper implements WDEP_Const {
         $string = str_replace('${'.$template.'}$', $meta, $string);
       endif;
       return $string;
-    } elseif (strpos(trim($template), 'get_post_info =>') === 0) {
+    } if (strpos(trim($template), 'get_post_info =>') === 0) {
       preg_match_all('/\[([^\]]*)\]/', $template, $matches);
       $arg = $matches[1];
       if (count($arg) === 2) :
@@ -188,7 +206,7 @@ class WDEP_Helper implements WDEP_Const {
         $string = str_replace('${'.$template.'}$', $post_info, $string);
       endif;
       return $string;
-    } else {
+    } 
   	  switch ($template) :
   	    case 'author' :
   	      $string = str_replace('${'.$template.'}$', get_the_author_meta('display_name', $post->post_author), $string);
@@ -228,17 +246,19 @@ class WDEP_Helper implements WDEP_Const {
 	        break;
   	  endswitch;
   	  return $string;
-    }
+    
 	}
 	
 	public function get_direct_term_list($arg) {
-	  global $post;
+	  $post = $this->post;
 	  if (is_numeric($arg[0])) {
-	    return get_the_term_list($post->ID, $arg[0], $arg[1], $arg[2], $arg[3]);
+	    return get_the_term_list($arg[0], $arg[1], $arg[2], $arg[3], $arg[4]);
+	  } elseif (empty($arg[0])) {
+	    return get_the_term_list($post->ID, $arg[1], $arg[2], $arg[3], $arg[4]);
 	  } else {
 	    $post_id = get_post_meta($post->ID, $arg[0], true);
 	    if (empty($post_id)) return '';
-	    return get_the_term_list($post_id, $arg[0], $arg[1], $arg[2], $arg[3]);
+	    return get_the_term_list($post_id, $arg[1], $arg[2], $arg[3], $arg[4]);
 	  }
 	}
 	
@@ -249,7 +269,7 @@ class WDEP_Helper implements WDEP_Const {
 	  if (strpos(trim($post_id), ',') !== false) return $value;
 	  if (strpos(trim($info), ',') !== false) return $value;
 	  if (!$post_id || empty($post_id)) {
-	    global $post;
+	    $post = $this->post;
 	    switch ($info) {
 	      case 'ID' :
 	        $value = $post->ID;
@@ -332,7 +352,8 @@ class WDEP_Helper implements WDEP_Const {
 	    }
 	    return $value;
 	  } else {
-	    global $post;
+	    $post = $this->post;
+	    
 	    $post_id = get_post_meta($post->ID, $post_id, true);
 	    if (!is_numeric($post_id) || empty($post_id)) return $value;
 	    $post = get_post($post_id);
@@ -384,7 +405,7 @@ class WDEP_Helper implements WDEP_Const {
 	}
 	
 	private function get_formatted_value($option) {
-      global $post;
+      $post = $this->post;
       
       if (!isset($post->ID)) {
           return '';

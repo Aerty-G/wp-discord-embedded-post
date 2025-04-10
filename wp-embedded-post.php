@@ -7,7 +7,7 @@
  * Plugin Name: Wp Discord Embedded Post
  * Description: A Discord integration that sends a message on your desired Discord server and channel for every new post published.
  *
- * Version:     1.0.0
+ * Version:     1.0.3
  * Author:      Aerty-G
  * Author URI:  https://github.com/Aerty-G
  * Plugin URI: https://github.com/Aerty-G/wp-discord-embedded-post
@@ -60,6 +60,8 @@ class WP_Discord_Embedded_Post implements WDEP_Const {
 	   if ( $new_status === 'publish' && ( $old_status === 'draft' || $old_status === 'pending' || $old_status === 'future' ) ) {
 	     $suppres_post = isset( $_POST['wpdep_suppres_post'] ) && $_POST['wpdep_suppres_post'] !== 0;
 	     $post_id = $post->ID;
+	     $this->option->Helper->post_id = $post_id;
+	     $this->option->Helper->post = $post;
 	     $cat = wp_get_post_categories( $post_id );
 	     $data = array();
        foreach ( $cat as $c ) {
