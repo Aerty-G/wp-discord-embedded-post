@@ -1,0 +1,14 @@
+{
+    "version": "0.0.1",
+    "requires": "7.4",
+    "tested": "7.4",
+    "last_updated": "",
+    "download_url": "",
+    "changelog": {
+        "0.0.1": [
+            "Initial Release",
+        ],
+    },
+    "banners": {
+    }
+}
