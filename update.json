@@ -8,10 +8,10 @@
         "1.0.3": [
             "Fix global $post",
             "Fix Components To Post Via Bot",
-            "Add more documentation",
+            "Add more documentation"
         ],
         "1.0.0": [
-            "Initial Release",
-        ],
+            "Initial Release"
+        ]
     }
 }
