@@ -32,7 +32,7 @@
       </div>
       
       <div id="variable-options" class="wpdep-doc-section">
-        <h3>Variable Options Configuration</h3>
+        <h3>Variable Placeholder Options Configuration</h3>
         
         <div class="wpdep-doc-feature">
           <h4>Template Placeholders</h4>
@@ -40,12 +40,32 @@
           <pre><code>${template_name}$</code></pre>
         </div>
         
-        <div class="wpdep-doc-feature">
+        <div class="wpdep-doc-feature" id="var-mode-explain">
           <h4>Processing Modes</h4>
           <ul>
             <li><strong>Single:</strong> Uses the first meta key's value</li>
             <li><strong>Combine:</strong> Joins all values with separator</li>
             <li><strong>Connect:</strong> Uses first value as post ID to get second value</li>
+          </ul>
+        </div>
+        
+        <div class="wpdep-doc-feature">
+          <h4>Dynamic Meta Placeholders</h4>
+          <p>Are you too lazy to set variables in the available settings? You can also directly do a 'direct get' in this way.</p>
+          <pre><code>${get_post_meta => [mode],[keys],[separator]}$</code></pre>
+          <p>Here you can set to fetch meta in a similar way to setting it in the settings but here you set it 'directly'.</p>
+          <ul>
+            <li><strong>Mode:</strong> like the explanation in <a href="#var-mode-explain" class="sorot">above</a>.</li>
+            <li><strong>Keys:</strong> In the 'keys' section you can fill it with 1 or more meta keys, each separated by ','.</li>
+            <li><strong>Separator:</strong> in the 'separator' section you can fill it with anything, because this section is the separator between each value of the meta key, but only for <strong>Combine</strong> mode.</li>
+          </ul>
+        </div>
+        
+        <div class="wpdep-doc-feature">
+          <h4>Defaults Placeholder</h4>
+          <p>Here's The List Of All Defaults Placeholder.</p>
+          <ul>
+            <li></li>
           </ul>
         </div>
       </div>

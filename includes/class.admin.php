@@ -157,7 +157,7 @@ class WDEP_Admin implements WDEP_Const {
                 ? esc_url_raw($_POST['default_discord_settings']['webhook_url']) 
                 : '',
             'bot_token' => isset($_POST['default_discord_settings']['bot_token']) 
-                ? sanitize_text_field($_POST['default_discord_settings']['bot_token']) 
+                ? $_POST['default_discord_settings']['bot_token'] 
                 : '',
             'channel_id' => isset($_POST['default_discord_settings']['channel_id']) 
                 ? sanitize_text_field($_POST['default_discord_settings']['channel_id']) 
@@ -723,21 +723,16 @@ class WDEP_Admin implements WDEP_Const {
                 if (!empty($embed['fields'])) :
                 foreach ($embed['fields'] as $field_index => $field) : ?>
                     <div class="field-group" data-index="<?php echo $field_index; ?>">
-                        <?php echo $this->render_embed_field($index, $field_index, $field); 
-                        ?>
+                        <?php echo $this->render_embed_field($index, $field_index, $field); ?>
                     </div>
                 <?php endforeach; 
                 else : ?>
                     <div class="field-group" data-index="0">
-                    <?php echo $this->render_embed_field_default($index); ?>
-                    
+                        <?php echo $this->render_embed_field_default($index); ?>
                     </div>
                 <?php endif;
                 ?>
-                
             </div>
-            
-            
             <div class="setting-group">
                 <label>Image URL</label>
                 <input type="text" name="embed_options[embeded][<?php echo $index; ?>][image][url]" 

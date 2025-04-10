@@ -514,6 +514,28 @@ jQuery(document).ready(function($) {
           $('.wpdep-doc-content > div').removeClass('active'); 
           $(targetId).addClass('active');
         });
+
+        $('a.sorot[href^="#"]').on('click', function(e) {
+          const targetId = $(this).attr('href').substring(1);
+          const $target = $('#' + targetId);
+          if ($target.length) {
+            if (!$target.data('originalBg')) {
+              $target.data('originalBg', $target.css('background-color'));
+            }
+            if ($target.data('timeoutId')) {
+              clearTimeout($target.data('timeoutId'));
+            }
+            $target.css({
+              transition: 'background-color 0.5s ease',
+              'background-color': '#ffffc0ac'
+            });
+            const timeoutId = setTimeout(() => {
+              $target.css('background-color', $target.data('originalBg'));
+              $target.removeData('timeoutId');
+            }, 2000);
+            $target.data('timeoutId', timeoutId);
+          }
+        });
       }
     };
 

@@ -38,12 +38,10 @@ class WP_Discord_Embedded_Post implements WDEP_Const {
 	public function __construct() {
 	  /* Silence is golden */ 
 	  require_once( 'includes/class.implements.php' );
-	  require_once( 'includes/class.database.php' );
 	  require_once( 'includes/class.admin.php' );
     require_once( 'includes/class.discord.php' );
     require_once( 'includes/class.helper.php' );
 	  $this->option = new stdClass();
-	  $this->option->Database = new WDEP_Database();
 	  $this->option->Helper = new WDEP_Helper();
 	  $this->option->Admin = new WDEP_Admin();
 	  add_action( 'transition_post_status', array( $this, 'PublishPostHook' ), 20, 3 );
@@ -52,7 +50,7 @@ class WP_Discord_Embedded_Post implements WDEP_Const {
 	
 	public function SendToDiscord( array $data ) {
 	  $DC = new WDEP_Discord( $data );
-	  $DC->Send();
+	  $response = $DC->Send();
 	}
 	
 	public function PublishPostHook( $new_status, $old_status, $post ) {
@@ -72,10 +70,9 @@ class WP_Discord_Embedded_Post implements WDEP_Const {
           return;
        }
        
-       error_log( print_r( $data, true ) );
-       
        $final_data = $this->option->Helper->ConstructRawDataCP( [ 'post_id' => $post_id, 'data' => $data ] );
-       
+       if (!$final_data) return;
+       $this->SendToDiscord($final_data);
 	   }
 	}
 	
