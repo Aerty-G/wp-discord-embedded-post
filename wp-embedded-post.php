@@ -19,10 +19,11 @@
 }
 
 require_once( 'includes/class.implements.php' );
+require_once( 'includes/class.plugin-update.php' );
 
 // More Const Was In "includes/class.implements.php"
 define( 'WEP_IS_DEBUG', false );
-
+define( 'WPDEP_VERSION', '1.0.3' );
 
 class WP_Discord_Embedded_Post implements WDEP_Const {
   protected static $_instance = null;
@@ -42,11 +43,9 @@ class WP_Discord_Embedded_Post implements WDEP_Const {
 	  require_once( 'includes/class.admin.php' );
     require_once( 'includes/class.discord.php' );
     require_once( 'includes/class.helper.php' );
-    require_once( 'includes/class.plugin-update.php' );
 	  $this->option = new stdClass();
 	  $this->option->Helper = new WDEP_Helper();
 	  $this->option->Admin = new WDEP_Admin();
-	  $this->option->Updater = new WPDEP_Updater();
 	  add_action( 'transition_post_status', array( $this, 'PublishPostHook' ), 20, 3 );
 	}
 	
@@ -80,11 +79,10 @@ class WP_Discord_Embedded_Post implements WDEP_Const {
        $this->SendToDiscord($final_data);
 	   }
 	}
-	
 }
 
 WP_Discord_Embedded_Post::instance();
-
+new WPDEP_Updater(WPDEP_VERSION);
 function WP_DiscordPost() {
   return WP_Discord_Embedded_Post::instance();
 }
