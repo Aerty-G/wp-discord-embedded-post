@@ -31,7 +31,7 @@ There are several dynamic placeholders that can be used and here is a further ex
 
 #### `get_post_meta`
 This placeholder is able to take `meta_value` according to the parameters given, if it is placed into the embedded then the part that has this placeholder will be replaced with `meta_value`.   
-**Example: **  
+**Example:**  
 <code>${get_post_meta => [mode],[keys],[separator]}$</code>  
 > **Mode**: like the explanation in above.  
 > **Keys**: In the 'keys' section you can fill it with 1 or more meta keys, each separated by ','.  
@@ -39,7 +39,7 @@ This placeholder is able to take `meta_value` according to the parameters given,
 
 #### `get_post_info`
 By using this you can retrieve information from posts either the current post, or a post with a certain ID, or even a post from the id that is in the meta in the current post.  
-**Example: **  
+**Example:**  
 <code>${get_post_info => [id/meta_key],[info]}$</code>  
 > **ID/Meta_Key**: This section if you fill it with the ID of a post it will retrieve information based on the ID, but if you fill it with meta_key it will retrieve the meta value based on the current post ID then the value will be the basis for retrieving the post information, then if you leave it blank it will retrieve the ID of the current post.  
 > **Info**: in this section you fill it with the information you want to retrieve from the post based on the ID column earlier, the list will be below.  
