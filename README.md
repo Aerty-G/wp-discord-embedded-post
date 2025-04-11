@@ -63,9 +63,9 @@ Available in:
 - `connect`: Use first value as post ID to get second value
 
 **Example:**  
-`${get_post_meta => [single],[product_price]}$`  
-`${get_post_meta => [combine],[name_product,product_price], [: ]}$`  
-`${get_post_meta => [connect],[parent_product,product_price]}$`  
+- `${get_post_meta => [single],[product_price]}$`  
+- `${get_post_meta => [combine],[name_product,product_price], [: ]}$`  
+- `${get_post_meta => [connect],[parent_product,product_price]}$`  
 
 #### `get_post_info` Syntax:
 `${get_post_info => [id/meta_key],[info]}$`
@@ -83,8 +83,8 @@ Available in:
 - `post_category` - Post Category.
 
 **Example:**  
-`${get_post_meta => [],[permalink]}$`  
-`${get_post_meta => [parent_post],[permalink]}$`  
+- `${get_post_meta => [],[permalink]}$`  
+- `${get_post_meta => [parent_post],[permalink]}$`  
 
 ### Default Placeholders
 - `${permalink}$` - Post URL
@@ -98,6 +98,7 @@ Available in:
 - `${post_name}$` - Post slug
 
 ## 📸 Screenshots
+Currently Unavailable 
 
 ![Settings Page]()  
 *Plugin configuration panel*
