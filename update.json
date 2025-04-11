@@ -1,17 +1,16 @@
 {
-    "version": "1.0.3",
-    "requires": "7.4",
-    "tested": "7.4",
-    "last_updated": "2025-04-11",
-    "download_url": "https://github.com/Aerty-G/wp-discord-embedded-post/releases/download/v1.0.3/wp-embedded-post.zip",
-    "changelog": {
-        "1.0.3": [
-            "Fix global $post",
-            "Fix Components To Post Via Bot",
-            "Add more documentation"
-        ],
-        "1.0.0": [
-            "Initial Release"
-        ]
-    }
+  "name": "WP Discord Embedded Post",
+  "slug": "wp-embedded-post",
+  "version": "1.0.3",
+  "author": "Aerty-G",
+  "author_homepage": "https://github.com/Aerty-G",
+  "homepage": "https://github.com/Aerty-G/wp-discord-embedded-post",
+  "download_url": "https://github.com/Aerty-G/wp-discord-embedded-post/releases/download/v1.0.3/wp-embedded-post.zip",
+  "requires": "7.4",
+  "tested": "7.4",
+  "last_updated": "2025-04-11",
+  "sections": {
+    "description": "A Discord integration that sends a message on your desired Discord server and channel for every new post published.",
+    "changelog": "Fix global $post, Fix Components To Post Via Bot, Add more documentation"
+  }
 }
