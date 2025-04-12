@@ -1,6 +1,6 @@
 <?php
 /**
- * Helper For Filtering Nad Retrieve Data
+ * Helper For Filtering And Retrieve Data
  */
 
 require_once('class.implements.php');
@@ -38,13 +38,14 @@ class WPDEP_Helper implements WPDEP_Const {
 	}
 	
 	public function ConstructRawDataCP( $data ) {
-	  $f = array();
+	  $final = array();
+	  if ($this->post_id === null && $post === null) return $final;
 	  $defaultsetarray = get_option(self::DEFAULT_SET_LIST_OPT, array());
     $connection_type = $defaultsetarray['connection_type'] ?? 'webhook';
     $webhook_url = $defaultsetarray['webhook_url'] ?? '';
     $bot_token = $defaultsetarray['bot_token'] ?? '';
     $channel_id = $defaultsetarray['channel_id'] ?? '';
-    $f = [
+    $final = [
       'connection_type' => $connection_type,
       'webhook_url' => $webhook_url,
       'bot_token' => $bot_token,
@@ -61,7 +62,7 @@ class WPDEP_Helper implements WPDEP_Const {
 	        if (!$embeded) continue;
 	        $embeded = $this->FilteringEmbededPlaceholder($embeded);
 	        
-	        $f['options'][] = [
+	        $final['options'][] = [
             'style_id' => $dt['style_id'],
 	          'main_message' => $this->FilterVar($dt['main_message']),
 	          'channel_id' => $dt['channel_id'],
@@ -72,11 +73,12 @@ class WPDEP_Helper implements WPDEP_Const {
 	      endif;
 	    endforeach;
 	  endforeach;
-	  if ( empty( $f['options'] ) || count($f['options']) === 0 ) return false;
-	  return $f;
+	  if ( empty( $final['options'] ) || count($final['options']) === 0 ) return false;
+	  return $final;
 	}
 	
 	public function FilteringEmbededPlaceholder( $embed ) {
+	  if ($this->post_id === null && $post === null) return $embed;
 	  $final = [
 	      'embeded' => [
             'author' => [
@@ -132,17 +134,19 @@ class WPDEP_Helper implements WPDEP_Const {
 	}
 	
 	private function getTimeStamp() {
+	  if ($this->post_id === null && $post === null) return false;
 	  $post = $this->post;
 	  return get_post_time('Y-m-d\TH:i:s.v\Z', true, $post->ID);
 	}
 	
-	public function RetrieveEmbedStyle( $id ) {
+	private function RetrieveEmbedStyle( $id ) {
 	  $styles = get_option( self::EMBEDDED_STRUCT_LIST_OPT, array() );
 	  if ( empty( $styles ) ) return false;
 	  return isset( $styles['embeded'][$id] ) ? $styles['embeded'][$id] : false;
 	}
 	
 	public function FilterVar( $string, $id = '' ) {
+	  if ($this->post_id === null && $post === null) return false;
 	  $original = $string;
 	  try {
   	  if (!$id || empty($id)) {
@@ -169,7 +173,8 @@ class WPDEP_Helper implements WPDEP_Const {
    }
 	}
 	
-	public function FilterDefaultVar( $string, $template ) {
+	private function FilterDefaultVar( $string, $template ) {
+	  if ($this->post_id === null && $post === null) return $string;
 	  $post = $this->post;
 	  if ($post->ID === '') return $string;
 	  if (strpos(trim($template), 'get_term_list =>') === 0) {
@@ -206,7 +211,12 @@ class WPDEP_Helper implements WPDEP_Const {
         $string = str_replace('${'.$template.'}$', $post_info, $string);
       endif;
       return $string;
-    } 
+    } if (strpos(trim($template), 'post_content:') === 0) {
+      $value = $this->get_post_content_dyn( $template, $post );
+      if (empty($post_info) || $post_info === '') $post_info = '${'.$template.'}$';
+      $string = str_replace('${'.$template.'}$', $post_info, $string);
+      return $string;
+    }
   	  switch ($template) :
   	    case 'author' :
   	      $string = str_replace('${'.$template.'}$', get_the_author_meta('display_name', $post->post_author), $string);
@@ -235,6 +245,9 @@ class WPDEP_Helper implements WPDEP_Const {
 	      case 'post_content' :
 	        $string = str_replace('${'.$template.'}$', $post->post_content, $string);
 	        break;
+	      case 'post_category' :
+  	      $string = str_replace('${'.$template.'}$', $post->post_category, $string);
+  	      break;
 	      case 'default_tag' :
 	        $defaultsetarray = get_option(self::DEFAULT_SET_LIST_OPT, array());
           $default_tag = $defaultsetarray['default_tag'] ?? '';
@@ -249,7 +262,22 @@ class WPDEP_Helper implements WPDEP_Const {
     
 	}
 	
-	public function get_direct_term_list($arg) {
+	private function get_post_content_dyn( $template, $post ) {
+	  $template_array = explode( ':', $template );
+	  if (count($template_array) < 3) return 'Syntax Error';
+	  if (!is_numeric((int)$template_array[1]) && !is_numeric((int)$template_array[2])) return 'Syntax Invalid';
+	  switch ((int)$template_array[1]) :
+	    case 0 :
+	      $value = wp_trim_words(strip_tags($post->post_content), (int)$template_array[2], '');
+	      break;
+	    case 1 :
+	      $value = mb_substr(strip_tags($post->post_content), (int)$template_array[2]);
+	      break;
+	  endswitch;
+	  return $value;
+	}
+	
+	private function get_direct_term_list($arg) {
 	  $post = $this->post;
 	  if (is_numeric($arg[0])) {
 	    return get_the_term_list($arg[0], $arg[1], $arg[2], $arg[3], $arg[4]);
@@ -262,7 +290,7 @@ class WPDEP_Helper implements WPDEP_Const {
 	  }
 	}
 	
-	public function get_direct_post_info_value($arg) {
+	private function get_direct_post_info_value($arg) {
 	  $post_id = $arg[0];
 	  $info = $arg[1];
 	  $value = '';
@@ -270,86 +298,12 @@ class WPDEP_Helper implements WPDEP_Const {
 	  if (strpos(trim($info), ',') !== false) return $value;
 	  if (!$post_id || empty($post_id)) {
 	    $post = $this->post;
-	    switch ($info) {
-	      case 'ID' :
-	        $value = $post->ID;
-	        break;
-	      case 'post_author' :
-	        $value = $post->post_author;
-	        break;
-	      case 'post_date' :
-	        $value =$post->post_date;
-	        break;
-	      case 'post_content' :
-	        $value = $post->post_content;
-	        break;
-	      case 'post_title' :
-	        $value = $post->post_title;
-	        break;
-	      case 'post_excerpt' :
-	        $value = $post->post_excerpt;
-	        break;
-	      case 'post_status' :
-	        $value = $post->post_status;
-	        break;
-	      case 'post_name' :
-	        $value = $post->post_name;
-	        break;
-	      case 'post_type' :
-	        $value = $post->post_type;
-	        break;
-	      case 'post_category' :
-	        $value = $post->post_category;
-	        break;
-	      case 'thumbnail_url' :
-	        $value = get_the_post_thumbnail_url($post->ID);
-	        break;
-	      case 'permalink' :
-	        $value = get_permalink($post->ID);
-	        break;
-	    }
+	    $value = $this->get_info_post( $info, $post );
 	    return $value;
 	  } elseif(is_numeric($post_id)) {
 	    $post = get_post($post_id);
 	    if (!$post) return $value;
-	    switch ($info) {
-	      case 'ID' :
-	        $value = $post->ID;
-	        break;
-	      case 'post_author' :
-	        $value = $post->post_author;
-	        break;
-	      case 'post_date' :
-	        $value =$post->post_date;
-	        break;
-	      case 'post_content' :
-	        $value = $post->post_content;
-	        break;
-	      case 'post_title' :
-	        $value = $post->post_title;
-	        break;
-	      case 'post_excerpt' :
-	        $value = $post->post_excerpt;
-	        break;
-	      case 'post_status' :
-	        $value = $post->post_status;
-	        break;
-	      case 'post_name' :
-	        $value = $post->post_name;
-	        break;
-	      case 'post_type' :
-	        $value = $post->post_type;
-	        break;
-	      case 'post_category' :
-	        $value = $post->post_category;
-	        break;
-	      case 'thumbnail_url' :
-	        $value = get_the_post_thumbnail_url($post->ID);
-	        break;
-	      case 'permalink' :
-	        $value = get_permalink($post->ID);
-	        break;
-	    }
+	    $value = $this->get_info_post( $info, $post );
 	    return $value;
 	  } else {
 	    $post = $this->post;
@@ -358,6 +312,12 @@ class WPDEP_Helper implements WPDEP_Const {
 	    if (!is_numeric($post_id) || empty($post_id)) return $value;
 	    $post = get_post($post_id);
 	    if (!$post) return $value;
+	    $value = $this->get_info_post( $info, $post );
+	    return $value;
+	  }
+	}
+	
+	private function get_info_post( $info, $post ) {
 	    switch ($info) {
 	      case 'ID' :
 	        $value = $post->ID;
@@ -396,11 +356,13 @@ class WPDEP_Helper implements WPDEP_Const {
 	        $value = get_permalink($post->ID);
 	        break;
 	    }
+	    if (strpos(trim($info), 'post_content:') === 0) {
+	      $value = get_post_content_dyn( $info, $post );
+	    }
 	    return $value;
-	  }
 	}
 	
-	public function get_direct_formatted_value($arg) {
+	private function get_direct_formatted_value($arg) {
 	  return $this->get_formatted_value(['mode' => $arg[0], 'keys' => explode(',',$arg[1]), 'separator' => $arg[2]]);
 	}
 	

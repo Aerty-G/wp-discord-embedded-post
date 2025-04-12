@@ -73,6 +73,7 @@ class WP_Discord_Embedded_Post implements WPDEP_Const {
 	   }
 	   return;
 	}
+	
 	private function HandleNewPublishPost( $post ) {
       $post_id = $post->ID;
       $this->option->Helper->post_id = $post_id;
@@ -94,6 +95,7 @@ class WP_Discord_Embedded_Post implements WPDEP_Const {
       if (!$final_data) return;
       $this->SendToDiscord($final_data);
 	}
+	
 	private function HandleUpdatePost( $post ) {
 	    
 	}
