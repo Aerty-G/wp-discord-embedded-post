@@ -4,7 +4,7 @@
  */
 
 
-interface WDEP_Const {
+interface WPDEP_Const {
   const CATEGORY_SELECTED_LIST_OPT = 'wdep_selected_cat_list';
   const EMBEDDED_VAR_LIST_OPT = 'wdep_var_list';
   const EMBEDDED_STRUCT_LIST_OPT = 'wdep_struct_list';

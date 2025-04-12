@@ -24,7 +24,7 @@ require_once( 'includes/class.implements.php' );
 define( 'WPDEP_IS_DEBUG', false );
 define( 'WPDEP_VERSION', '1.0.3' );
 
-class WP_Discord_Embedded_Post implements WDEP_Const {
+class WP_Discord_Embedded_Post implements WPDEP_Const {
   protected static $_instance = null;
   public $option;
   
@@ -39,8 +39,8 @@ class WP_Discord_Embedded_Post implements WDEP_Const {
 	  /* Silence is golden */ 
 	  $this->DefineAssets();
 	  $this->option = new stdClass();
-	  $this->option->Helper = new WDEP_Helper();
-	  $this->option->Admin = new WDEP_Admin();
+	  $this->option->Helper = new WPDEP_Helper();
+	  $this->option->Admin = new WPDEP_Admin();
 	  $this->option->Updater = new WPDEP_Updater(WPDEP_VERSION);
 	  add_action( 'transition_post_status', array( $this, 'PublishPostHook' ), 20, 3 );
 	}
