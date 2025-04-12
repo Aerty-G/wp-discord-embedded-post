@@ -20,6 +20,18 @@ The plugin hooks into WordPress's `transition_post_status` action to detect when
 3. Sends the message to your specified Discord channel
 4. Supports both bot and webhook integration methods
 
+```mermaid
+graph TD
+    A[Post Update] --> B{Has Watched Category?}
+    B -->|Yes| C[Build Embed Template]
+    B -->|No| D[Do Nothing]
+    C --> E[Replace Placeholders]
+    E --> F[Send to Discord]
+    F --> G{Success?}
+    G -->|Yes| H[Log Delivery]
+    G -->|No| I[Retry/Alert]
+```
+
 ## 🔌 Installation
 
 1. Download the latest version from the [Releases page](#)
@@ -172,3 +184,7 @@ button:
 ## 🤝 Contributing
 
 We welcome contributions! Please fork the repository and submit pull requests.
+
+**Todo List**:
+- [ ] More Platform integration
+- [ ] Make The Frontend Better
