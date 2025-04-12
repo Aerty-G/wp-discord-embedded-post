@@ -83,6 +83,7 @@
             <li><code>${post_type}$</code>: To Showing Status Of Current Post, Like Published, Draft, Future.</li>
             <li><code>${post_name}$</code>: To Showing Slug Of Current Post.</li>
             <li><code>${post_content}$</code>: To Showing Content Of Current Post.</li>
+            <li><code>${post_content:type_trim:number}$</code>: To Showing Content Of Current Post, but the content itself will get trim base on words or letter. If Base on Words fill type_trim with 0, if by letter fill type_trim with 1.</li>
             <li><code>${default_tag}$</code>: To Showing Default Tag You Set in The Default Settings.</li>
           </ul>
         </div>
@@ -119,11 +120,14 @@
             <li><strong>Separator:</strong> Separator between the terms that are retrieved later..</li>
             <li><strong>Before:</strong> The string or html that is at the front of the list..</li>
             <li><strong>After:</strong> The string at the end of the list..</li>
-            <li><strong>Filter:</strong> If you want to filter the results of the term list with strip_tags then please fill it with the number 1 if not leave it blank, then the list will be displayed as it is..</li>
+            <li><strong>Filter:</strong> If you want to filter the results of the term list with strip_tags then please fill it with the number <code>1</code> if not leave it blank, then the list will be displayed as it is..</li>
           </ul>
         </div>
       </div>
 
+      <div id="faq" class="wpdep-doc-section">
+        
+      </div>
     </div>
   </div>
 </div>

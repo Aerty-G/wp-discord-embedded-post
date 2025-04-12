@@ -42,6 +42,16 @@ The plugin hooks into WordPress's `transition_post_status` action to detect when
 3. Copy the webhook URL
 4. Paste into the plugin settings
 
+### Tag Setup 
+1. Go to your discord server
+2. Open any channels
+3. Type your tag, example @News update
+4. Send The Message or Press 'Enter' your keyboard
+5. Copy the message
+6. Delete the message
+7. Now you have a id of the role you have to tag
+8. Put this id (Example: `<@&12345678912>`) to whenever you want like the default tag or directly in Embedded or the main message
+
 ## 📝 Placeholder System
 
 The plugin offers powerful placeholders to customize your embeds:
@@ -135,6 +145,7 @@ ${get_post_info => [],[thumbnail_url]}$
 - `${default_tag}$` - Your custom default tag
 - `${post_type}$` - Post Type
 - `${post_name}$` - Post slug
+- `${post_category}$` - Post Category 
 
 ## 🛠️ Advanced Usage
 
@@ -142,14 +153,16 @@ ${get_post_info => [],[thumbnail_url]}$
 
 **Basic Announcement**:
 ```yaml
+main_message: "${default_tag}$ @here"
 title: "New Post: ${post_title}$"
-description: "${post_content}$... [Read More](${permalink}$)"
+description: "${post_content:0:25}$... [Read More](${permalink}$)"
 thumbnail: "${thumbnail_url}$"
 color: "#FF5733"
 ```
 
 **E-Commerce Product Alert**:
 ```yaml
+main_message: "${default_tag}$ @here"
 title: "🚀 New Product: ${get_post_meta => [single],[product_name]}$"
 fields:
   - name: "Price"
