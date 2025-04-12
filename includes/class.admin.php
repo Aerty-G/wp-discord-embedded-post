@@ -2,7 +2,7 @@
 
 require_once('class.implements.php');
 
-class WDEP_Admin implements WDEP_Const {
+class WPDEP_Admin implements WPDEP_Const {
     private $admin_pages = [];
     private $admin_assets_loaded = false;
     private $meta_options = [];

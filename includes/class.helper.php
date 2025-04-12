@@ -5,7 +5,7 @@
 
 require_once('class.implements.php');
 
-class WDEP_Helper implements WDEP_Const {
+class WPDEP_Helper implements WPDEP_Const {
   public $post_id = null;
   public $post = null;
   public function __construct() {

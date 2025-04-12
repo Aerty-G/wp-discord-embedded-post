@@ -5,7 +5,7 @@
 
 require_once('class.implements.php');
 
-class WDEP_Discord implements WDEP_Const {
+class WPDEP_Discord implements WPDEP_Const {
   private $option;
   public function __construct($data) {
     	  /* Silence is golden */ 
