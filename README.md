@@ -1,6 +1,6 @@
 # WordPress Embedded Post Plugin
 
-A powerful WordPress plugin that automatically sends rich embedded messages to Discord channels when your posts are published or updated.
+A powerful WordPress plugin that automatically sends rich embedded messages to Discord channels when your posts are published.
 
 ## ✨ Features
 
@@ -13,7 +13,7 @@ A powerful WordPress plugin that automatically sends rich embedded messages to D
 
 ## 🚀 How It Works
 
-The plugin hooks into WordPress's `transition_post_status` action to detect when posts are published or updated. It then:
+The plugin hooks into WordPress's `transition_post_status` action to detect when posts are published. It then:
 
 1. Checks if the post belongs to a monitored category
 2. Constructs a rich embed message using your templates
@@ -143,7 +143,7 @@ ${get_post_info => [],[thumbnail_url]}$
 **Basic Announcement**:
 ```yaml
 title: "New Post: ${post_title}$"
-description: "${post_content:0:200}... [Read More](${permalink}$)"
+description: "${post_content}$... [Read More](${permalink}$)"
 thumbnail: "${thumbnail_url}$"
 color: "#FF5733"
 ```
