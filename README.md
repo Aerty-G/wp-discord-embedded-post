@@ -54,21 +54,53 @@ Available in:
 - Button labels
 - Footer text
 
-#### `get_post_meta` Syntax:
+#### `get_post_meta` Deep Dive
+
+**Syntax**:  
 `${get_post_meta => [mode],[keys],[separator]}$`
 
-**Modes:**
-- `single`: Use first meta key's value
-- `combine`: Join multiple values with separator
-- `connect`: Use first value as post ID to get second value
+**Mode Comparison**:
 
-**Example:**  
-`${get_post_meta => [single],[product_price]}$`  
-`${get_post_meta => [combine],[name_product,product_price], [: ]}$`  
-`${get_post_meta => [connect],[parent_product,product_price]}$`  
+| Mode     | Input Example | Output Example | Use Case |
+|----------|---------------|----------------|----------|
+| single   | `[single],[price]` | `29.99` | Simple field values |
+| combine  | `[combine],[city,state],[, ]` | `New York, NY` | Composite fields |
+| connect  | `[connect],[related_post,title]` | `Featured Product` | Cross-post data |
 
-#### `get_post_info` Syntax:
-`${get_post_info => [id/meta_key],[info]}$`
+**Real-World Examples**:
+```markdown
+1. Product Price Display:  
+   `${get_post_meta => [single],[product_price]}$` → `49.99`
+
+2. Location Formatting:  
+   `${get_post_meta => [combine],[city,country], [ - ]}$` → `Paris - France`
+
+3. Related Content:  
+   `${get_post_meta => [connect],[featured_product,product_name]}$` → `Premium Headphones`
+```
+
+#### `get_post_info` Mastery
+
+**Advanced Syntax**:
+```markdown
+# Get from meta-referenced post
+${get_post_info => [featured_event],[post_title]}$
+
+# Get from direct ID
+${get_post_info => [42],[permalink]}$
+
+# Current post fallback
+${get_post_info => [],[thumbnail_url]}$
+```
+
+**Output Samples**:
+```markdown
+| Template | Sample Output |
+|----------|---------------|
+| `${...[],[post_date]}$` | `2023-07-15 14:30:00` |
+| `${...[42],[post_title]}$` | `Summer Sale Event` |
+| `${...[event_ref],[thumbnail_url]}$` | `https://example.com/image.jpg` |
+```
 
 **Available Info:**
 - `post_author` - Post author name
@@ -82,11 +114,18 @@ Available in:
 - `post_type` - Post Type
 - `post_category` - Post Category.
 
-**Example:**  
-`${get_post_meta => [],[permalink]}$`  
-`${get_post_meta => [parent_post],[permalink]}$`  
+### Default Placeholders Cheat Sheet
 
-### Default Placeholders
+**Quick Reference Table**:
+
+| Placeholder | Equivalent PHP | Sample Output |
+|-------------|----------------|---------------|
+| `${author}$` | `get_the_author()` | `John Doe` |
+| `${discord_timestamp}$` | `<t:UNIXTIME:R>` | `2 hours ago` |
+| `${post_content}$` | `get_the_content()` | Full HTML content |
+| `${post_category}$` | `get_the_category_list()` | `News, Updates` |
+
+**Available Default Placeholders:**
 - `${permalink}$` - Post URL
 - `${author}$` - Post author
 - `${post_content}$` - Post Content
@@ -96,6 +135,31 @@ Available in:
 - `${default_tag}$` - Your custom default tag
 - `${post_type}$` - Post Type
 - `${post_name}$` - Post slug
+
+## 🛠️ Advanced Usage
+
+### Template Examples
+
+**Basic Announcement**:
+```yaml
+title: "New Post: ${post_title}$"
+description: "${post_content:0:200}... [Read More](${permalink}$)"
+thumbnail: "${thumbnail_url}$"
+color: "#FF5733"
+```
+
+**E-Commerce Product Alert**:
+```yaml
+title: "🚀 New Product: ${get_post_meta => [single],[product_name]}$"
+fields:
+  - name: "Price"
+    value: "$${get_post_meta => [single],[price]}$"
+  - name: "Availability"
+    value: "${get_post_meta => [single],[stock_status]}$"
+button:
+  label: "Buy Now"
+  url: "${permalink}$"
+```
 
 ## 📸 Screenshots
 
