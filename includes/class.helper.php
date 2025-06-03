@@ -77,6 +77,10 @@ class WPDEP_Helper implements WPDEP_Const {
 	  return $final;
 	}
 	
+  function clean_url($url) {
+      return preg_replace('/^http:\/\//i', 'https://', $url);
+  }
+	
 	public function FilteringEmbededPlaceholder( $embed ) {
 	  if ($this->post_id === null && $post === null) return $embed;
 	  $final = [
@@ -88,7 +92,7 @@ class WPDEP_Helper implements WPDEP_Const {
             'title' => $this->FilterVar($embed['title']),
             'description' => $this->FilterVar($embed['description']),
             'fields' => [],
-            'image' => ['url' => $embed['image']['url'] ],
+            'image' => ['url' => $this->clean_url($this->FilterVar($embed['image']['url'])) ],
             'color' => empty($embed['color']) ? null : $embed['color'],
             'timestamp' => !empty($embed['timestamp']) ? $embed['timestamp'] : $this->getTimeStamp(),
             'footer' => ['text' => $this->FilterVar($embed['footer']['text']) ],
@@ -117,7 +121,7 @@ class WPDEP_Helper implements WPDEP_Const {
                 'type' => 2,
                 'style' => 5,
                 'label' => $filteredLabel,
-                'url' => $component['url'],
+                'url' => $this->FilterVar($component['url']),
             ];
             
             if (isset($component['emoji']) && !empty($component['emoji']['id'])) {
@@ -215,6 +219,12 @@ class WPDEP_Helper implements WPDEP_Const {
       $value = $this->get_post_content_dyn( $template, $post );
       if (empty($post_info) || $post_info === '') $post_info = '${'.$template.'}$';
       $string = str_replace('${'.$template.'}$', $post_info, $string);
+      return $string;
+    } if (strpos(trim($template), 'default_message =>') === 0) {
+      preg_match_all('/\[([^\]]*)\]/', $template, $matches);
+      $defaultsetarray = get_option(self::DEFAULT_SET_LIST_OPT, array());
+      $default_message = $defaultsetarray['default_message'] ?? '';
+      $string = str_replace('${'.$template.'}$', str_replace('%var_0%', $matches[1][0], $default_message), $string);
       return $string;
     }
   	  switch ($template) :
