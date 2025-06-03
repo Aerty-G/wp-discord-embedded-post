@@ -233,8 +233,6 @@ class WPDEP_Admin implements WPDEP_Const {
     
     $category_options = [];
     
-    // file_put_contents(__DIR__.'/cats.json', json_encode($_POST['category_options']));
-    
     if (isset($_POST['category_options'])) {
         foreach ($_POST['category_options'] as $option) {
             $cat_ids = isset($option['cat_ids']) ? array_map('absint', $option['cat_ids']) : [];
