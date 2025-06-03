@@ -386,6 +386,52 @@ textarea.widefat {
   }
 }
 
+#faq .wpdep-doc-feature {
+  margin-bottom: 1.5em;
+  padding: 1.2em;
+  background: #f8fafc;
+  border-left: 3px solid #2271b1;
+  border-radius: 4px;
+}
+
+#faq .wpdep-doc-feature h4 {
+  margin-top: 0;
+  color: #1d2327;
+}
+
+#faq a {
+  color: #2271b1;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: all 0.2s ease;
+}
+
+#faq a:hover {
+  color: #135e96;
+  border-bottom-color: currentColor;
+}
+
+.link-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.link-box {
+  padding: 15px;
+  background: #f8fafc;
+  border: 1px solid #e5e5e5;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.link-box a {
+  display: block;
+  padding: 8px;
+  word-break: break-word;
+}
+
 /* .highlight {
   background-color: #ffffc0ac;
   transition: background-color 0.3s ease;

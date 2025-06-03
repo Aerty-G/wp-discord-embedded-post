@@ -393,113 +393,165 @@ jQuery(document).ready(function($) {
     // Category Options
     // ======================
     const categoryOptions = {
-        init() {
-            $('#add-category-option').on('click', this.addCategoryOption);
-            $(document).on('click', '.remove-category-option', this.removeCategoryOption);
-            
-            // Initialize Select2
-            $('.category-select').select2({
-                placeholder: "Select categories...",
-                allowClear: true,
-                width: '100%'
-            });
-            
-            $('.embed-style-select').select2({
-                placeholder: "Select an embed style...",
-                allowClear: true,
-                width: '100%'
-            });
-        },
+    init() {
+        $('#add-category-option').on('click', this.addCategoryOption.bind(this));
+        $(document).on('click', '.remove-category-option', this.removeCategoryOption.bind(this));
         
-        addCategoryOption() {
-            const container = $('#category-options-container');
-            const index = $('.category-option-block').length;
-            
-            container.append(`
-                <div class="category-option-block" data-index="${index}">
-                    <div class="option-header">
-                        <h3>Category Setting #${index + 1}</h3>
-                        <button type="button" class="remove-category-option button">Remove</button>
-                    </div>
-                    
-                    <div class="setting-group">
-                        <label>Categories</label>
-                        <select name="category_options[${index}][cat_ids][]" class="widefat category-select" multiple="multiple">
-                            ${$('.category-select:first').html()}
-                        </select>
-                        <p class="description">Select one or more categories</p>
-                    </div>
-                    
-                    <div class="setting-group">
-                        <label>Embed Style</label>
-                        <select name="category_options[${index}][selected_embedded_style]" class="widefat embed-style-select">
-                            ${$('.embed-style-select:first').html()}
-                        </select>
-                        <p class="description">Choose the embed style for these categories</p>
-                    </div>
-                    
-                    <div class="setting-group">
-                        <label>Main Message (optional)</label>
-                        <input type="text" name="category_options[${index}][main_message]" class="widefat">
-                        <p class="description">This Main Message Will Be Send As Default Message Like You Send Messages In Discord Normally Before The Embedded Message.</p>
-                    </div>
-                    
-                    <div class="setting-group">
-                        <label>Channel ID (optional)</label>
-                        <input type="text" name="category_options[${index}][channel_id]" class="widefat">
-                        <p class="description">Override default channel for these categories</p>
-                    </div>
-                    
-                    <div class="setting-group">
-                        <label>Bot Token (optional)</label>
-                        <input type="text" name="category_options[${index}][bot_token]" class="widefat">
-                        <p class="description">Override default bot token for these categories</p>
-                    </div>
-                    
-                    <div class="setting-group">
-                        <label>Webhook URL (optional)</label>
-                        <input type="text" name="category_options[${index}][webhook_url]" class="widefat">
-                        <p class="description">Override default webhook for these categories</p>
-                    </div>
-                </div>
-            `);
-            
-            // Initialize Select2 for new elements
-            container.find('.category-option-block:last .category-select').select2({
-                placeholder: "Select categories...",
-                allowClear: true,
-                width: '100%'
-            });
-            
-            container.find('.category-option-block:last .embed-style-select').select2({
-                placeholder: "Select an embed style...",
-                allowClear: true,
-                width: '100%'
-            });
-        },
+        // Inisialisasi semua select saat halaman dimuat
+        this.initAllSelects();
+    },
+    
+    initAllSelects() {
+        // Inisialisasi kategori select
+        $('.category-select').each((index, element) => {
+            this.initCategorySelect($(element));
+        });
         
-        removeCategoryOption() {
-            if ($('.category-option-block').length > 1) {
-                $(this).closest('.category-option-block').remove();
-                this.updateCategoryIndexes();
-            } else {
-                alert('You must have at least one category option.');
-            }
-        },
+        // Inisialisasi embed style select
+        $('.embed-style-select').each((index, element) => {
+            this.initEmbedSelect($(element));
+        });
+    },
+    
+    initCategorySelect($select) {
+        // Dapatkan nilai yang dipilih dari data attribute
+        const selectedIds = JSON.parse($select.attr('data-selected') || '[]');
         
-        updateCategoryIndexes() {
-            $('.category-option-block').each(function(index) {
-                $(this).attr('data-index', index)
-                       .find('h3').text(`Category Setting #${index + 1}`);
-                
-                $(this).find('[name^="category_options"]').each(function() {
-                    const newName = $(this).attr('name')
-                        .replace(/category_options\[\d+\]/, `category_options[${index}]`);
-                    $(this).attr('name', newName);
-                });
-            });
+        // Bersihkan select
+        $select.empty();
+        
+        // Tambahkan semua opsi kategori
+        wpdepData.categories.forEach(category => {
+            const selected = selectedIds.includes(category.id) ? 'selected' : '';
+            $select.append(`<option value="${category.id}" ${selected}>${category.name} (ID: ${category.id})</option>`);
+        });
+        
+        // Inisialisasi Select2
+        $select.select2({
+            placeholder: "Select categories...",
+            allowClear: true,
+            width: '100%'
+        });
+    },
+    
+    initEmbedSelect($select) {
+        // Dapatkan nilai yang dipilih dari data attribute
+        const selectedValue = $select.attr('data-selected') || '';
+        
+        // Simpan opsi default
+        const defaultOption = '<option value="">— Default Style —</option>';
+        
+        // Bersihkan select
+        $select.empty().append(defaultOption);
+        
+        // Tambahkan semua opsi embed style
+        for (const [key, value] of Object.entries(wpdepData.embedStyles)) {
+            const selected = key == selectedValue ? 'selected' : '';
+            $select.append(`<option value="${key}" ${selected}>${value}</option>`);
         }
-    };
+        
+        // Inisialisasi Select2
+        $select.select2({
+            placeholder: "Select an embed style...",
+            allowClear: true,
+            width: '100%'
+        });
+    },
+    
+    addCategoryOption() {
+        const container = $('#category-options-container');
+        const index = $('.category-option-block').length;
+        
+        // Buat blok baru dengan atribut data-selected kosong
+        container.append(`
+            <div class="category-option-block" data-index="${index}">
+                <div class="option-header">
+                    <h3>Category Setting #${index + 1}</h3>
+                    <button type="button" class="remove-category-option button">Remove</button>
+                </div>
+                
+                <div class="setting-group">
+                    <label>Categories</label>
+                    <select name="category_options[${index}][cat_ids][]" 
+                            class="widefat category-select" 
+                            multiple="multiple"
+                            data-selected="[]">
+                        <!-- Opsi akan diisi oleh JavaScript -->
+                    </select>
+                    <p class="description">Select one or more categories</p>
+                </div>
+                
+                <div class="setting-group">
+                    <label>Embed Style</label>
+                    <select name="category_options[${index}][selected_embedded_style]" 
+                            class="widefat embed-style-select"
+                            data-selected="">
+                        <!-- Opsi akan diisi oleh JavaScript -->
+                    </select>
+                    <p class="description">Choose the embed style for these categories</p>
+                </div>
+                
+                <div class="setting-group">
+                    <label>Main Message (optional)</label>
+                    <textarea name="category_options[${index}][main_message]" class="widefat"></textarea>
+                    <p class="description">This Main Message Will Be Send As Default Message Like You Send Messages In Discord Normally Before The Embedded Message.</p>
+                </div>
+                
+                <div class="setting-group">
+                    <label>Channel ID (optional)</label>
+                    <input type="text" name="category_options[${index}][channel_id]" class="widefat">
+                    <p class="description">Override default channel for these categories</p>
+                </div>
+                
+                <div class="setting-group">
+                    <label>Bot Token (optional)</label>
+                    <input type="text" name="category_options[${index}][bot_token]" class="widefat">
+                    <p class="description">Override default bot token for these categories</p>
+                </div>
+                
+                <div class="setting-group">
+                    <label>Webhook URL (optional)</label>
+                    <input type="text" name="category_options[${index}][webhook_url]" class="widefat">
+                    <p class="description">Override default webhook for these categories</p>
+                </div>
+            </div>
+        `);
+        
+        // Inisialisasi select baru
+        this.initCategorySelect(container.find('.category-option-block:last .category-select'));
+        this.initEmbedSelect(container.find('.category-option-block:last .embed-style-select'));
+    },
+    
+    removeCategoryOption() {
+        if ($('.category-option-block').length > 1) {
+            $(this).closest('.category-option-block').remove();
+            this.updateCategoryIndexes();
+        } else {
+            alert('You must have at least one category option.');
+        }
+    },
+    
+    updateCategoryIndexes() {
+        $('.category-option-block').each(function(index) {
+            const $block = $(this);
+            $block.attr('data-index', index);
+            $block.find('h3').text(`Category Setting #${index + 1}`);
+            
+            // Update semua nama input di blok ini
+            $block.find('[name]').each(function() {
+                const $input = $(this);
+                const name = $input.attr('name');
+                const newName = name.replace(
+                    /category_options\[\d+\]/g, 
+                    `category_options[${index}]`
+                );
+                $input.attr('name', newName);
+            });
+        });
+    }
+};
+
+
     
     // ======================
     // Documentation 
@@ -545,4 +597,17 @@ jQuery(document).ready(function($) {
     discordConnection.init();
     embedManager.init();
     categoryOptions.init();
+    $('.category-select').select2({
+        placeholder: "Select categories...",
+        allowClear: true,
+        width: '100%'
+    });
+    
+    $('.embed-style-select').select2({
+        placeholder: "Select an embed style...",
+        allowClear: true,
+        width: '100%'
+    });
 });
+
+

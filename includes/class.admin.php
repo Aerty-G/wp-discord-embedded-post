@@ -150,6 +150,9 @@ class WPDEP_Admin implements WPDEP_Const {
             'default_tag' => isset($_POST['default_discord_settings']['default_tag']) 
                 ? $_POST['default_discord_settings']['default_tag'] 
                 : '',
+            'default_message' => isset($_POST['default_discord_settings']['default_message']) 
+                ? $_POST['default_discord_settings']['default_message'] 
+                : '',
             'connection_type' => isset($_POST['default_discord_settings']['connection_type']) 
                 ? sanitize_text_field($_POST['default_discord_settings']['connection_type']) 
                 : 'webhook',
@@ -178,12 +181,12 @@ class WPDEP_Admin implements WPDEP_Const {
                 $processed_embed = [
                     'author' => [
                         'name' => $embed['author']['name'] ?? '',
-                        'url' => esc_url_raw($embed['author']['url'] ?? '')
+                        'url' => ($embed['author']['url'] ?? '')
                     ],
                     'title' => $embed['title'] ?? '',
                     'description' => $embed['description'] ?? '',
                     'fields' => [],
-                    'image' => ['url' => esc_url_raw($embed['image']['url'] ?? '')],
+                    'image' => ['url' => ($embed['image']['url'] ?? '')],
                     'color' => sanitize_hex_color($embed['color'] ?? ''),
                     'timestamp' => sanitize_text_field($embed['timestamp'] ?? ''),
                     'footer' => ['text' => $embed['footer']['text'] ?? ''],
@@ -206,7 +209,7 @@ class WPDEP_Admin implements WPDEP_Const {
                             $processed_embed['components'][] = [
                                 'type' => 2,
                                 'label' => $component['label'],
-                                'url' => esc_url_raw($component['url'] ?? ''),
+                                'url' => ($component['url'] ?? ''),
                                 'emoji' => [
                                     'id' => sanitize_text_field($component['emoji']['id'] ?? ''),
                                     'name' => sanitize_text_field($component['emoji']['name'] ?? ''),
@@ -226,54 +229,43 @@ class WPDEP_Admin implements WPDEP_Const {
     }
     
     private function save_category_options() {
-        check_admin_referer('save_wpdep_category_options_action', 'wpdep_category_options_nonce');
-        
-        $category_options = [];
-        
-        if (isset($_POST['category_options'])) {
-            foreach ($_POST['category_options'] as $option) {
-                $cat_ids = isset($option['cat_ids']) ? array_map('absint', $option['cat_ids']) : [];
-                
-                $processed_option = [
-                    'cat_ids' => $cat_ids,
-                    'selected_embedded_style' => isset($option['selected_embedded_style']) 
-                        ? sanitize_text_field($option['selected_embedded_style']) 
-                        : '',
-                    'channel_id' => isset($option['channel_id']) 
-                        ? sanitize_text_field($option['channel_id']) 
-                        : '',
-                    'main_message' => isset($option['main_message']) 
-                        ? $option['main_message'] 
-                        : '',
-                    'bot_token' => isset($option['bot_token']) 
-                        ? sanitize_text_field($option['bot_token']) 
-                        : '',
-                    'webhook_url' => isset($option['webhook_url']) 
-                        ? esc_url_raw($option['webhook_url']) 
-                        : ''
-                ];
-                
-                if (!empty($processed_option['cat_ids'])) {
-                    $category_options[] = $processed_option;
-                }
-            }
-        }
-        
-        if (empty($category_options)) {
-            $category_options[] = [
-                'cat_ids' => [],
-                'selected_embedded_style' => '',
-                'main_message' => '',
-                'channel_id' => '',
-                'bot_token' => '',
-                'webhook_url' => ''
+    check_admin_referer('save_wpdep_category_options_action', 'wpdep_category_options_nonce');
+    
+    $category_options = [];
+    
+    // file_put_contents(__DIR__.'/cats.json', json_encode($_POST['category_options']));
+    
+    if (isset($_POST['category_options'])) {
+        foreach ($_POST['category_options'] as $option) {
+            $cat_ids = isset($option['cat_ids']) ? array_map('absint', $option['cat_ids']) : [];
+            
+            $processed_option = [
+                'cat_ids' => $cat_ids,
+                'selected_embedded_style' => isset($option['selected_embedded_style']) 
+                    ? sanitize_text_field($option['selected_embedded_style']) 
+                    : '',
+                'channel_id' => isset($option['channel_id']) 
+                    ? sanitize_text_field($option['channel_id']) 
+                    : '',
+                'main_message' => isset($option['main_message']) 
+                    ? $option['main_message']
+                    : '',
+                'bot_token' => isset($option['bot_token']) 
+                    ? sanitize_text_field($option['bot_token']) 
+                    : '',
+                'webhook_url' => isset($option['webhook_url']) 
+                    ? esc_url_raw($option['webhook_url']) 
+                    : ''
             ];
+            
+            $category_options[] = $processed_option;
         }
-        
-        update_option(self::CATEGORY_SELECTED_SET_OPT, $category_options);
-        add_settings_error('wpdep_category_options_messages', 'wpdep_category_options_message', __('Category options saved successfully!', 'wp-discord-embedded-post'), 'success');
     }
     
+    
+    update_option(self::CATEGORY_SELECTED_SET_OPT, $category_options);
+    add_settings_error('wpdep_category_options_messages', 'wpdep_category_options_message', __('Category options saved successfully!', 'wp-discord-embedded-post'), 'success');
+}
   	public function FormMain() {
   	      echo file_get_contents(__DIR__.'/documentation.html');
   	}
@@ -285,7 +277,8 @@ class WPDEP_Admin implements WPDEP_Const {
             'default_tag' => '',
             'webhook_url' => '',
             'bot_token' => '',
-            'channel_id' => ''
+            'channel_id' => '',
+            'default_message' => ''
         ]);
           settings_errors('wpdep_default_settings_messages');
          ob_start();
@@ -303,6 +296,13 @@ class WPDEP_Admin implements WPDEP_Const {
                                    class="widefat" 
                                    placeholder="@here or @everyone">
                             <p class="description">This tag will be used for all notifications</p>
+                            <br>
+                            <label>Default Message</label>
+                            <textarea 
+                                   name="default_discord_settings[default_message]" 
+                                   class="widefat" 
+                                   placeholder="@here or @everyone or Message You Want"><?php echo esc_textarea($settings['default_message']??''); ?></textarea>
+                            <p class="description">This Message will be used for all notifications</p>
                         </div>
         
                         <div class="setting-group">
@@ -395,9 +395,25 @@ class WPDEP_Admin implements WPDEP_Const {
             }
         }
         
+        $js_categories = [];
+        foreach ($categories as $category) {
+            $js_categories[] = [
+                'id' => $category->term_id,
+                'name' => $category->name
+            ];
+        }
+        
+        $js_embed_styles = $embed_styles;  
+        
         settings_errors('wpdep_category_options_messages');
         ob_start();
         ?>
+        <script>
+            var wpdepData = {
+                categories: <?php echo json_encode($js_categories); ?>,
+                embedStyles: <?php echo json_encode($js_embed_styles); ?>
+            };
+        </script>
         <div class="wrap">
             <h1>Post & Category Manager</h1>
             <div class="wpdep-dashboard-widget">
@@ -441,6 +457,8 @@ class WPDEP_Admin implements WPDEP_Const {
   	
   	private function render_category_option_block($index, $option, $categories, $embed_styles) {
         ob_start();
+
+       $selected_cat_ids = isset($option['cat_ids']) ? (array) $option['cat_ids'] : [];
         ?>
         <div class="option-header">
             <h3>Category Setting #<?php echo ($index + 1); ?></h3>
@@ -449,38 +467,31 @@ class WPDEP_Admin implements WPDEP_Const {
         
         <div class="setting-group">
             <label>Categories</label>
-            <select name="category_options[<?php echo $index; ?>][cat_ids][]" class="widefat category-select" multiple="multiple">
-                <?php foreach ($categories as $category) : ?>
-                    <option value="<?php echo $category->term_id; ?>" 
-                        <?php selected(in_array($category->term_id, (array)$option['cat_ids']), true); ?>>
-                        <?php echo esc_html($category->name); ?> (ID: <?php echo $category->term_id; ?>)
-                    </option>
-                <?php endforeach; ?>
+            <select name="category_options[<?php echo $index; ?>][cat_ids][]" 
+                    class="widefat category-select" 
+                    multiple="multiple"
+                    data-selected="<?php echo esc_attr(json_encode($selected_cat_ids)); ?>">
             </select>
             <p class="description">Select one or more categories</p>
         </div>
         
         <div class="setting-group">
             <label>Embedded Style</label>
-            <select name="category_options[<?php echo $index; ?>][selected_embedded_style]" class="widefat embed-style-select">
+            <select name="category_options[<?php echo $index; ?>][selected_embedded_style]" 
+                    class="widefat embed-style-select"
+                    data-selected="<?php echo esc_attr($option['selected_embedded_style']); ?>">
                 <option value="">— Default Style —</option>
-                <?php foreach ($embed_styles as $style_index => $style_name) : ?>
-                    <option value="<?php echo $style_index; ?>" 
-                        <?php selected($option['selected_embedded_style'], $style_index); ?>>
-                        <?php echo esc_html($style_name); ?>
-                    </option>
-                <?php endforeach; ?>
             </select>
             <p class="description">Choose the embed style for these categories</p>
         </div>
         
         <div class="setting-group">
             <label>Main Messages (optional)</label>
-            <input type="text" 
+            <textarea  
                    name="category_options[<?php echo $index; ?>][main_message]" 
-                   value="<?php echo esc_attr($option['main_message']); ?>" 
+
                    class="widefat"
-                   placeholder="Hello There, Our Category Post Has An Update!">
+                   placeholder="Hello There, Our Category Post Has An Update!"><?php echo ($option['main_message']); ?></textarea>
                    <p class="description">This Main Message Will Be Send As Default Message Like You Send Messages In Discord Normally Before The Embedded Message.</p>
         </div>
         
@@ -736,7 +747,7 @@ class WPDEP_Admin implements WPDEP_Const {
             <div class="setting-group">
                 <label>Image URL</label>
                 <input type="text" name="embed_options[embeded][<?php echo $index; ?>][image][url]" 
-                       value="<?php echo esc_attr($embed['image']['url']); ?>" 
+                       value="<?php echo ($embed['image']['url']); ?>" 
                        class="widefat">
                 <p class="description">URL of an image to display at the bottom of the embed</p>
             </div>
