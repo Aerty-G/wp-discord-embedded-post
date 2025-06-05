@@ -8,6 +8,8 @@ require_once('class.implements.php');
 class WPDEP_Helper implements WPDEP_Const {
   public $post_id = null;
   public $post = null;
+  public $is_filter_comment = false;
+  public $comment = null;
   public function __construct() {
 	  /* Silence is golden */ 
 	  
@@ -78,21 +80,26 @@ class WPDEP_Helper implements WPDEP_Const {
 	}
 	
   function clean_url($url) {
-      return preg_replace('/^http:\/\//i', 'https://', $url);
+      return str_replace('http://', 'https://', $url);
   }
 	
 	public function FilteringEmbededPlaceholder( $embed ) {
-	  if ($this->post_id === null && $post === null) return $embed;
+	  if (!$this->is_filter_comment) {
+	    if ($this->post_id === null && $post === null) return $embed;
+	  }
+	  
+	  $featured_image = get_post_meta($this->post_id, '_wpdep_featured_image', true);
+	  
 	  $final = [
 	      'embeded' => [
             'author' => [
                 'name' => $this->FilterVar($embed['author']['name']),
-                'url' => $embed['author']['url']
+                'url' => $this->FilterVar($embed['author']['url'])
             ],
             'title' => $this->FilterVar($embed['title']),
-            'description' => $this->FilterVar($embed['description']),
+            'description' => $this->discord_comment_filter($this->FilterVar($embed['description'])),
             'fields' => [],
-            'image' => ['url' => $this->clean_url($this->FilterVar($embed['image']['url'])) ],
+            'image' => ['url' => trim($featured_image) ?: $this->clean_url($this->FilterVar($embed['image']['url'])) ],
             'color' => empty($embed['color']) ? null : $embed['color'],
             'timestamp' => !empty($embed['timestamp']) ? $embed['timestamp'] : $this->getTimeStamp(),
             'footer' => ['text' => $this->FilterVar($embed['footer']['text']) ],
@@ -138,9 +145,15 @@ class WPDEP_Helper implements WPDEP_Const {
 	}
 	
 	private function getTimeStamp() {
-	  if ($this->post_id === null && $post === null) return false;
-	  $post = $this->post;
-	  return get_post_time('Y-m-d\TH:i:s.v\Z', true, $post->ID);
+	  if (!$this->is_filter_comment) {
+	    if ($this->post_id === null && $post === null) return false;
+	    $post = $this->post;
+	    return get_post_time('Y-m-d\TH:i:s.v\Z', true, $post->ID);
+	  }
+	  $dt = new DateTime( $this->comment->comment_date, wp_timezone() );
+	  $dt->setTimezone( new DateTimeZone('UTC') );
+	  return $dt->format('Y-m-d\TH:i:s.v\Z');
+	  
 	}
 	
 	private function RetrieveEmbedStyle( $id ) {
@@ -150,10 +163,12 @@ class WPDEP_Helper implements WPDEP_Const {
 	}
 	
 	public function FilterVar( $string, $id = '' ) {
-	  if ($this->post_id === null && $post === null) return false;
+	  if (!$this->is_filter_comment) {
+	    if ($this->post_id === null && $post === null) return $string;
+	  }
 	  $original = $string;
 	  try {
-  	  if (!$id || empty($id)) {
+  	  if ( (!$id || empty($id)) && !$this->is_filter_comment ) {
   	    $post = $this->post;
   	    $id = $post->ID;
   	  }
@@ -178,7 +193,13 @@ class WPDEP_Helper implements WPDEP_Const {
 	}
 	
 	private function FilterDefaultVar( $string, $template ) {
-	  if ($this->post_id === null && $post === null) return $string;
+	  
+	  if (!$this->is_filter_comment) {
+	    if ($this->post_id === null && $post === null) return $string;
+	  }
+	  if ($this->is_filter_comment) {
+      return $this->CommentInfo( $string, $template);
+    }
 	  $post = $this->post;
 	  if ($post->ID === '') return $string;
 	  if (strpos(trim($template), 'get_term_list =>') === 0) {
@@ -226,7 +247,19 @@ class WPDEP_Helper implements WPDEP_Const {
       $default_message = $defaultsetarray['default_message'] ?? '';
       $string = str_replace('${'.$template.'}$', str_replace('%var_0%', $matches[1][0], $default_message), $string);
       return $string;
-    }
+    } if (strpos(trim($template), 'custom_description =>') === 0) {
+      preg_match_all('/\[([^\]]*)\]/', $template, $matches);
+      $meta_description = get_post_meta($post->ID, '_wpdep_custom_description', true); 
+      if (!empty($meta_description)) {
+        $string = str_replace('${'.$template.'}$', $this->FilterVar($meta_description), $string);
+      } else {
+        $string = str_replace('${'.$template.'}$', $matches[1][0], $string);
+      }
+      return $string;
+    } 
+    
+  
+    
   	  switch ($template) :
   	    case 'author' :
   	      $string = str_replace('${'.$template.'}$', get_the_author_meta('display_name', $post->post_author), $string);
@@ -238,7 +271,9 @@ class WPDEP_Helper implements WPDEP_Const {
   	      $string = str_replace('${'.$template.'}$', get_permalink($post->ID), $string);
   	      break;
   	    case 'thumbnail_url' :
-  	      $string = str_replace('${'.$template.'}$', get_the_post_thumbnail_url($post->ID), $string);
+          $thumb_id = get_post_thumbnail_id( $post->ID );
+          $url = wp_get_attachment_image_url( $thumb_id, 'full' );
+  	      $string = str_replace('${'.$template.'}$', !empty($url) ? $url : get_the_post_thumbnail_url($post->ID, 'full'), $string);
   	      break;
   	    case 'post_title' :
   	      $string = str_replace('${'.$template.'}$', $post->post_title, $string);
@@ -267,10 +302,108 @@ class WPDEP_Helper implements WPDEP_Const {
 	        $timestamp = '<t:'.$this->getTimeStamp().':R>';
 	        $string = str_replace('${'.$template.'}$', $timestamp, $string);
 	        break;
+	      case 'thumbnail_url_or_featured_image' :
+	        $thumb_id = get_post_thumbnail_id( $post->ID );
+          $url = wp_get_attachment_image_url( $thumb_id, 'full' );
+          $featured_image = get_post_meta($post->ID, '_wpdep_featured_image', true);
+          if (!empty($featured_image) && filter_var($featured_image, FILTER_VALIDATE_URL)) {
+            $string = str_replace('${'.$template.'}$', trim($featured_image), $string);
+          } else {
+  	        $string = str_replace('${'.$template.'}$', !empty($url) ? $url : get_the_post_thumbnail_url($post->ID, 'full'), $string);
+          }
+	        break;
   	  endswitch;
   	  return $string;
     
 	}
+	
+	private function CommentInfo($string, $template) {
+	    if ($this->comment === null) return $string;
+	    $comment = $this->comment;
+	    if (strpos(trim($template), 'get_comment_meta =>') === 0) {
+	      
+	    }
+	    switch ($template) :
+	      case 'comment_content' :
+	        $string = str_replace('${'.$template.'}$', $comment->comment_content, $string);
+	        break;
+	      case 'comment_author' :
+	        $string = str_replace('${'.$template.'}$', $comment->comment_author, $string);
+	        break;
+	      case 'comment_date' :
+	        $string = str_replace('${'.$template.'}$', $comment->comment_date, $string);
+	        break;
+	      case 'comment_id' :
+	        $string = str_replace('${'.$template.'}$', $comment->comment_ID, $string);
+	        break;
+	      case 'comment_post_title' :
+	        $id_p = $comment->comment_post_ID;
+	        $parent_post = get_post($id_p);
+	        $string = str_replace('${'.$template.'}$', $parent_post->post_title, $string);
+	        break;
+	      case 'comment_discord_timestamp' : 
+	        
+	        $string = str_replace('${'.$template.'}$', strtotime($comment->comment_date), $string);
+	        break;
+	      case 'comment_permalink' : 
+	        $permalink = get_comment_link( $comment->comment_ID );
+	        $string = str_replace('${'.$template.'}$', $permalink, $string);
+	        break;
+	      case 'comment_parent_content' :
+	        $comment_parent = get_comment($comment->comment_parent);
+	        $string = str_replace('${'.$template.'}$', $comment_parent->comment_content, $string);
+	        break;
+	      case 'comment_parent_author' :
+	        $comment_parent = get_comment($comment->comment_parent);
+	        $string = str_replace('${'.$template.'}$', $comment_parent->comment_author, $string);
+	        break;
+	      case 'comment_parent_date' :
+	        $comment_parent = get_comment($comment->comment_parent);
+	        $string = str_replace('${'.$template.'}$', $comment_parent->comment_date, $string);
+	        break;
+	      case 'comment_parent_id' :
+	        $string = str_replace('${'.$template.'}$', $comment->comment_parent, $string);
+	        break;
+	      case 'comment_pqrent_permalink' :
+	        $permalink = get_comment_link( $comment->comment_ID );
+	        $string = str_replace('${'.$template.'}$', $permalink, $string);
+	        break;
+	      case 'comment_parent_post_title' :
+	        $comment_parent = get_comment($comment->comment_parent);
+	        $id_p = $comment_parent->comment_post_ID;
+	        $parent_post = get_post($id_p);
+	        $string = str_replace('${'.$template.'}$', $parent_post->post_title, $string);
+	        break;
+	    endswitch;
+	    return $string;
+	}
+	
+	private function discord_comment_filter($comment_content) {
+	    // Space
+      $comment_content = str_replace('&nbsp;', ' ', $comment_content);
+      $comment_content = str_replace("\xc2\xa0", ' ', $comment_content);
+      // HTML to Markdown
+      $comment_content = preg_replace('/<p\b[^>]*>(.*?)<\/p>/is', "$1\n\n", $comment_content);
+      $comment_content = preg_replace('/<br\s?\/?>/i', "\n", $comment_content);
+      $comment_content = preg_replace('/<(strong|b)>(.*?)<\/\1>/is', '**$2**', $comment_content);
+      $comment_content = preg_replace('/<(em|i)>(.*?)<\/\1>/is', '*$2*', $comment_content);
+      $comment_content = preg_replace('/<u>(.*?)<\/u>/is', '__$1__', $comment_content);
+      
+      //  blockquotes
+      $comment_content = preg_replace('/<blockquote>(.*?)<\/blockquote>/is', "> $1", $comment_content);
+      
+      //  lists
+      $comment_content = preg_replace('/<ul\b[^>]*>(.*?)<\/ul>/is', "$1", $comment_content);
+      $comment_content = preg_replace('/<ol\b[^>]*>(.*?)<\/ol>/is', "$1", $comment_content);
+      $comment_content = preg_replace('/<li\b[^>]*>(.*?)<\/li>/is', "- $1\n", $comment_content);
+      
+      $comment_content = strip_tags($comment_content);
+      $comment_content = preg_replace('/\n\s+\n/', "\n\n", $comment_content);
+      $comment_content = preg_replace('/[\s]+$/', '', $comment_content);
+      $comment_content = trim($comment_content, " \t\n\r\0\x0B\xC2\xA0");
+      
+      return $comment_content;
+  }
 	
 	private function get_post_content_dyn( $template, $post ) {
 	  $template_array = explode( ':', $template );
