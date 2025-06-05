@@ -24,6 +24,10 @@ require_once( 'includes/class.implements.php' );
 define( 'WPDEP_IS_DEBUG', false );
 define( 'WPDEP_VERSION', '2.0.0' );
 
+
+
+
+
 class WP_Discord_Embedded_Post implements WPDEP_Const {
   protected static $_instance = null;
   public $option;
@@ -42,6 +46,7 @@ class WP_Discord_Embedded_Post implements WPDEP_Const {
 	  $this->option->Helper = new WPDEP_Helper();
 	  $this->option->Admin = new WPDEP_Admin();
 	  $this->option->Updater = new WPDEP_Updater(WPDEP_VERSION);
+	  add_filter('plugin_action_links_wp-embedded-post/wp-embedded-post.php', [$this, 'PluginButtons']);
 	  $this->hooks_init();
 	  add_action('plugins_loaded', [$this, 'late_init']);
 	  
@@ -58,6 +63,14 @@ class WP_Discord_Embedded_Post implements WPDEP_Const {
 	
 	public function late_init() {
 	  $this->option->Comment = new WPDEP_Comment();
+	}
+	
+	public function PluginButtons($links) {
+    $dashboard_url = admin_url('admin.php?page=wp-discord-embedded-post');
+    $dashboard_link = '<a href="' . esc_url($dashboard_url) . '">Dashboard</a>';
+    $github_link = '<a href="https://github.com/Aerty-G/wp-discord-embedded-post" target="_blank">GitHub</a>';
+    array_unshift($links, $dashboard_link, $github_link);
+    return $links;
 	}
 	
 	public function hooks_init () {
