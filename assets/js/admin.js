@@ -241,7 +241,7 @@ jQuery(document).ready(function($) {
                             </span>
                         </p>
                         <div class="components-container"></div>
-                        <button type="button" class="add-component button">+ Add Button</button>
+                        <button type="button" data-index="${index}" class="add-component button">+ Add Button</button>
                     </div>
                 </div>
             `);
@@ -253,7 +253,7 @@ jQuery(document).ready(function($) {
         removeEmbed() {
             if ($('.embed-block').length > 1) {
                 $(this).closest('.embed-block').remove();
-                this.updateEmbedIndexes();
+                embedManager.updateEmbedIndexes();
             } else {
                 alert('You must have at least one embed.');
             }
@@ -315,7 +315,7 @@ jQuery(document).ready(function($) {
         },
         
         addComponent() {
-            const embedIndex = $(this).closest('.embed-block').data('index');
+            const embedIndex = $(this).data('index');
             const container = $(this).prev('.components-container');
             
             if (container.find('.component-group').length >= 4) {
@@ -395,7 +395,7 @@ jQuery(document).ready(function($) {
     const categoryOptions = {
         init() {
             $('#add-category-option').on('click', this.addCategoryOption.bind(this));
-            $(document).on('click', '.remove-category-option', this.removeCategoryOption.bind(this));
+            $(document).on('click', '.remove-category-option', this.removeCategoryOption);
             this.initAllSelects();
         },
         
@@ -504,7 +504,7 @@ jQuery(document).ready(function($) {
         removeCategoryOption() {
             if ($('.category-option-block').length > 1) {
                 $(this).closest('.category-option-block').remove();
-                this.updateCategoryIndexes();
+                categoryOptions.updateCategoryIndexes();
             } else {
                 alert('You must have at least one category option.');
             }

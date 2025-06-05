@@ -7,7 +7,7 @@
  * Plugin Name: Wp Discord Embedded Post
  * Description: A Discord integration that sends a message on your desired Discord server and channel for every new post published.
  *
- * Version:     2.0.0
+ * Version:     2.0.2
  * Author:      Aerty-G
  * Author URI:  https://github.com/Aerty-G
  * Plugin URI: https://github.com/Aerty-G/wp-discord-embedded-post
@@ -22,7 +22,11 @@ require_once( 'includes/class.implements.php' );
 
 // More Const/Define Was In "includes/class.implements.php"
 define( 'WPDEP_IS_DEBUG', false );
-define( 'WPDEP_VERSION', '2.0.0' );
+define( 'WPDEP_VERSION', '2.0.2' );
+
+
+
+
 
 class WP_Discord_Embedded_Post implements WPDEP_Const {
   protected static $_instance = null;
@@ -36,20 +40,20 @@ class WP_Discord_Embedded_Post implements WPDEP_Const {
 	}
 	
 	public function __construct() {
-	  /* Silence is golden */ 
-	  $this->DefineAssets();
-	  $this->option = new stdClass();
-	  $this->option->Helper = new WPDEP_Helper();
-	  $this->option->Admin = new WPDEP_Admin();
-	  $this->option->Updater = new WPDEP_Updater(WPDEP_VERSION);
-	  $this->hooks_init();
-	  add_action('plugins_loaded', [$this, 'late_init']);
-	  
+      /* Silence is golden */ 
+      $this->DefineAssets();
+      $this->option = new stdClass();
+      $this->option->Helper = new WPDEP_Helper();
+      $this->option->Admin = new WPDEP_Admin();
+      $this->option->Updater = new WPDEP_Updater(WPDEP_VERSION);
+      add_filter('plugin_action_links_wp-embedded-post/wp-embedded-post.php', [$this, 'PluginButtons']);
+      $this->hooks_init();
+      add_action('plugins_loaded', [$this, 'late_init']);
 	}
 	
 	public function DefineAssets() {
-	  require_once( 'includes/class.implements.php' );
-	  require_once( 'includes/class.admin.php' );
+    require_once( 'includes/class.implements.php' );
+    require_once( 'includes/class.admin.php' );
     require_once( 'includes/class.discord.php' );
     require_once( 'includes/class.helper.php' );
     require_once( 'includes/class.plugin-update.php' );
@@ -58,6 +62,14 @@ class WP_Discord_Embedded_Post implements WPDEP_Const {
 	
 	public function late_init() {
 	  $this->option->Comment = new WPDEP_Comment();
+	}
+	
+	public function PluginButtons($links) {
+    $dashboard_url = admin_url('admin.php?page=wp-discord-embedded-post');
+    $dashboard_link = '<a href="' . esc_url($dashboard_url) . '">Dashboard</a>';
+    $github_link = '<a href="https://github.com/Aerty-G/wp-discord-embedded-post" target="_blank">GitHub</a>';
+    array_unshift($links, $dashboard_link, $github_link);
+    return $links;
 	}
 	
 	public function hooks_init () {
