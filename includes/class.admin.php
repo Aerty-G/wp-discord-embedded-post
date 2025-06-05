@@ -13,7 +13,8 @@ class WPDEP_Admin implements WPDEP_Const {
       	  add_action('admin_enqueue_scripts', [$this, 'wpdep_wp_enqueue']);
       	  add_action('admin_menu', array($this, 'add_admin_menus'));
           add_action('admin_init', array($this, 'handle_form_submissions'));
-          
+          add_action('add_meta_boxes', [$this, 'meta_boxes']);
+          add_action('save_post', [$this, 'save_metabox']);
   	}
 	
 	
@@ -52,6 +53,14 @@ class WPDEP_Admin implements WPDEP_Const {
                     'capability' => 'manage_options',
                     'menu_slug' => 'wpdep-embed-style-manager',
                     'callback' => [$this, 'FormEmbeddedStyle']
+                ],
+                [
+                    'parent_slug' => 'wp-discord-embedded-post',
+                    'page_title' => 'Embedded Comment Manager',
+                    'menu_title' => 'Embedded Comment',
+                    'capability' => 'manage_options',
+                    'menu_slug' => 'wpdep-embed-comment-manager',
+                    'callback' => [$this, 'FormEmbeddedStyleComment']
                 ],
                 [
                     'parent_slug' => 'wp-discord-embedded-post',
@@ -104,6 +113,10 @@ class WPDEP_Admin implements WPDEP_Const {
         
         if (isset($_POST['save_wpdep_category_options'])) {
             $this->save_category_options();
+        }
+        
+        if (isset($_POST['save_wpdep_embed_comment_options'])) {
+            $this->save_embed_comment_style_options();
         }
     }
     
@@ -164,7 +177,19 @@ class WPDEP_Admin implements WPDEP_Const {
                 : '',
             'channel_id' => isset($_POST['default_discord_settings']['channel_id']) 
                 ? sanitize_text_field($_POST['default_discord_settings']['channel_id']) 
-                : ''
+                : '',
+            'comment_channel_id' => isset($_POST['default_discord_settings']['comment_channel_id']) 
+                ? sanitize_text_field($_POST['default_discord_settings']['comment_channel_id']) 
+                : '',
+            'comment_webhook_url' => isset($_POST['default_discord_settings']['comment_webhook_url']) 
+                ? sanitize_text_field($_POST['default_discord_settings']['comment_webhook_url']) 
+                : '',
+            'hooks' => isset($_POST['default_discord_settings']['hooks']) 
+                ? sanitize_text_field($_POST['default_discord_settings']['hooks']) 
+                : 'hooks_1',
+            'comment_service' => isset($_POST['default_discord_settings']['comment_service']) 
+                ? sanitize_text_field($_POST['default_discord_settings']['comment_service']) 
+                : 'wp'
         ];
         
         update_option(self::DEFAULT_SET_LIST_OPT, $settings);
@@ -187,7 +212,7 @@ class WPDEP_Admin implements WPDEP_Const {
                     'description' => $embed['description'] ?? '',
                     'fields' => [],
                     'image' => ['url' => ($embed['image']['url'] ?? '')],
-                    'color' => sanitize_hex_color($embed['color'] ?? ''),
+                    'color' => ($embed['color'] ?? ''),
                     'timestamp' => sanitize_text_field($embed['timestamp'] ?? ''),
                     'footer' => ['text' => $embed['footer']['text'] ?? ''],
                     'components' => []
@@ -228,42 +253,100 @@ class WPDEP_Admin implements WPDEP_Const {
         add_settings_error('wpdep_embed_options_messages', 'wpdep_embed_options_message', __('Embed settings saved successfully!', 'wp-discord-embedded-post'), 'success');
     }
     
-    private function save_category_options() {
-    check_admin_referer('save_wpdep_category_options_action', 'wpdep_category_options_nonce');
-    
-    $category_options = [];
-    
-    if (isset($_POST['category_options'])) {
-        foreach ($_POST['category_options'] as $option) {
-            $cat_ids = isset($option['cat_ids']) ? array_map('absint', $option['cat_ids']) : [];
-            
-            $processed_option = [
-                'cat_ids' => $cat_ids,
-                'selected_embedded_style' => isset($option['selected_embedded_style']) 
-                    ? sanitize_text_field($option['selected_embedded_style']) 
-                    : '',
-                'channel_id' => isset($option['channel_id']) 
-                    ? sanitize_text_field($option['channel_id']) 
-                    : '',
-                'main_message' => isset($option['main_message']) 
-                    ? $option['main_message']
-                    : '',
-                'bot_token' => isset($option['bot_token']) 
-                    ? sanitize_text_field($option['bot_token']) 
-                    : '',
-                'webhook_url' => isset($option['webhook_url']) 
-                    ? esc_url_raw($option['webhook_url']) 
-                    : ''
-            ];
-            
-            $category_options[] = $processed_option;
+    private function save_embed_comment_style_options() {
+        check_admin_referer('save_wpdep_embed_comment_options_action', 'wpdep_embed_comment_options_nonce');
+        
+        $embed_options = ['embeded' => []];
+        
+        if (isset($_POST['embed_options']['embeded'])) {
+            foreach ($_POST['embed_options']['embeded'] as $embed) {
+                $processed_embed = [
+                    'author' => [
+                        'name' => $embed['author']['name'] ?? '',
+                        'url' => ($embed['author']['url'] ?? '')
+                    ],
+                    'title' => $embed['title'] ?? '',
+                    'description' => $embed['description'] ?? '',
+                    'fields' => [],
+                    'image' => ['url' => ($embed['image']['url'] ?? '')],
+                    'color' => ($embed['color'] ?? ''),
+                    'timestamp' => sanitize_text_field($embed['timestamp'] ?? ''),
+                    'footer' => ['text' => $embed['footer']['text'] ?? ''],
+                    'components' => []
+                ];
+                
+                if (isset($embed['fields'])) {
+                    foreach ($embed['fields'] as $field) {
+                        $processed_embed['fields'][] = [
+                            'name' => $field['name'] ?? '',
+                            'value' => $field['value'] ?? '',
+                            'inline' => isset($field['inline']) ? (bool)$field['inline'] : false
+                        ];
+                    }
+                }
+                
+                if (isset($embed['components'])) {
+                    foreach ($embed['components'] as $component) {
+                        if (isset($component['label'])) { 
+                            $processed_embed['components'][] = [
+                                'type' => 2,
+                                'label' => $component['label'],
+                                'url' => ($component['url'] ?? ''),
+                                'emoji' => [
+                                    'id' => sanitize_text_field($component['emoji']['id'] ?? ''),
+                                    'name' => sanitize_text_field($component['emoji']['name'] ?? ''),
+                                    'animated' => isset($component['emoji']['animated']) ? (bool)$component['emoji']['animated'] : false
+                                ]
+                            ];
+                        }
+                    }
+                }
+                
+                $embed_options['embeded'][] = $processed_embed;
+            }
         }
+        
+        update_option(self::EMBEDDED_COMMENT_STRUCT_OPT, $embed_options);
+        //file_put_contents(__DIR__.'/struktur.txt', var_export($embed_options, true));
+        add_settings_error('wpdep_embed_comment_options_messages', 'wpdep_embed_comment_options_messages', __('Embed settings saved successfully!', 'wp-discord-embedded-post'), 'success');
     }
     
-    
-    update_option(self::CATEGORY_SELECTED_SET_OPT, $category_options);
-    add_settings_error('wpdep_category_options_messages', 'wpdep_category_options_message', __('Category options saved successfully!', 'wp-discord-embedded-post'), 'success');
-}
+    private function save_category_options() {
+        check_admin_referer('save_wpdep_category_options_action', 'wpdep_category_options_nonce');
+        
+        $category_options = [];
+        
+        if (isset($_POST['category_options'])) {
+            foreach ($_POST['category_options'] as $option) {
+                $cat_ids = isset($option['cat_ids']) ? array_map('absint', $option['cat_ids']) : [];
+                
+                $processed_option = [
+                    'cat_ids' => $cat_ids,
+                    'selected_embedded_style' => isset($option['selected_embedded_style']) 
+                        ? sanitize_text_field($option['selected_embedded_style']) 
+                        : '',
+                    'channel_id' => isset($option['channel_id']) 
+                        ? sanitize_text_field($option['channel_id']) 
+                        : '',
+                    'main_message' => isset($option['main_message']) 
+                        ? $option['main_message']
+                        : '',
+                    'bot_token' => isset($option['bot_token']) 
+                        ? sanitize_text_field($option['bot_token']) 
+                        : '',
+                    'webhook_url' => isset($option['webhook_url']) 
+                        ? esc_url_raw($option['webhook_url']) 
+                        : ''
+                ];
+                
+                $category_options[] = $processed_option;
+            }
+        }
+        
+        
+        update_option(self::CATEGORY_SELECTED_SET_OPT, $category_options);
+        add_settings_error('wpdep_category_options_messages', 'wpdep_category_options_message', __('Category options saved successfully!', 'wp-discord-embedded-post'), 'success');
+    }
   	public function FormMain() {
   	      echo file_get_contents(__DIR__.'/documentation.html');
   	}
@@ -276,7 +359,11 @@ class WPDEP_Admin implements WPDEP_Const {
             'webhook_url' => '',
             'bot_token' => '',
             'channel_id' => '',
-            'default_message' => ''
+            'default_message' => '',
+            'comment_webhook_url' => '',
+            'comment_channel_id' => '',
+            'hooks' => 'hooks_1',
+            'comment_service' => 'wp'
         ]);
           settings_errors('wpdep_default_settings_messages');
          ob_start();
@@ -294,7 +381,8 @@ class WPDEP_Admin implements WPDEP_Const {
                                    class="widefat" 
                                    placeholder="@here or @everyone">
                             <p class="description">This tag will be used for all notifications</p>
-                            <br>
+                        </div>
+                        <div class="setting-group">
                             <label>Default Message</label>
                             <textarea 
                                    name="default_discord_settings[default_message]" 
@@ -302,7 +390,46 @@ class WPDEP_Admin implements WPDEP_Const {
                                    placeholder="@here or @everyone or Message You Want"><?php echo esc_textarea($settings['default_message']??''); ?></textarea>
                             <p class="description">This Message will be used for all notifications</p>
                         </div>
-        
+                        <div class="setting-group">
+                            <label>Hooks Type:</label>
+                            <div class="radio-options">
+                                    <label>
+                                        <input type="radio" name="default_discord_settings[hooks]" 
+                                               value="hooks_1" <?php checked($settings['hooks'], 'hooks_1'); ?>>
+                                        Hooks 1
+                                    </label>
+                                    <label>
+                                        <input type="radio" name="default_discord_settings[hooks]" 
+                                               value="hooks_2" <?php checked($settings['hooks'], 'hooks_2'); ?>>
+                                        Hooks 2
+                                    </label>
+                                    <label>
+                                        <input type="radio" name="default_discord_settings[hooks]" 
+                                               value="hooks_3" <?php checked($settings['hooks'], 'hooks_3'); ?>>
+                                        Hooks 3
+                                    </label>
+                            </div>
+                        </div>
+                        <div class="setting-group">
+                            <label>Comment Service:</label>
+                            <div class="radio-options">
+                                    <label>
+                                        <input type="radio" name="default_discord_settings[comment_service]" 
+                                               value="wp" <?php checked($settings['comment_service'], 'wp'); ?>>
+                                        WordPress 
+                                    </label>
+                                    <label>
+                                        <input type="radio" name="default_discord_settings[comment_service]" 
+                                               value="wpdiscuz" <?php checked($settings['comment_service'], 'wpdiscuz'); ?>>
+                                        WpDiscuz
+                                    </label>
+                                    <label>
+                                        <input type="radio" name="default_discord_settings[comment_service]" 
+                                               value="disqus" <?php checked($settings['comment_service'], 'disqus'); ?>>
+                                        Disqus
+                                    </label>
+                            </div>
+                        </div>
                         <div class="setting-group">
                             <label>Connection Type:</label>
                             <div class="radio-options">
@@ -327,6 +454,16 @@ class WPDEP_Admin implements WPDEP_Const {
                                        placeholder="https://discord.com/api/webhooks/...">
                                 <p class="description">The Discord webhook URL for sending messages</p>
                             </div>
+                            <div class="setting-group">
+                                <label for="discord_webhook_url">Comment Webhook URL</label>
+                                <input type="text" 
+                                       id="discord_webhook_url" 
+                                       name="default_discord_settings[comment_webhook_url]" 
+                                       value="<?php echo esc_attr($settings['comment_webhook_url']); ?>" 
+                                       class="widefat"
+                                       placeholder="https://discord.com/api/webhooks/...">
+                                <p class="description">The Discord webhook URL for sending comment messages</p>
+                            </div>
                         </div>
         
                         <div id="bot-settings" class="connection-settings" style="<?php echo ($connection_type !== 'bot') ? 'display:none;' : ''; ?>">
@@ -350,6 +487,16 @@ class WPDEP_Admin implements WPDEP_Const {
                                        class="widefat"
                                        placeholder="Target channel ID">
                                 <p class="description">The channel ID where messages should be sent</p>
+                            </div>
+                            <div class="setting-group">
+                                <label for="discord_channel_id">Comment Channel ID</label>
+                                <input type="text" 
+                                       id="discord_channel_id" 
+                                       name="default_discord_settings[comment_channel_id]" 
+                                       value="<?php echo esc_attr($settings['comment_channel_id']); ?>" 
+                                       class="widefat"
+                                       placeholder="Target channel ID">
+                                <p class="description">The channel ID where comment message should be sent</p>
                             </div>
                         </div>
                     </div>
@@ -686,11 +833,13 @@ class WPDEP_Admin implements WPDEP_Const {
         ];
     }
     
-    private function render_embed_block($index, $embed, $connection_type) {
+    private function render_embed_block($index, $embed, $connection_type, $is_comment = false) {
         ?>
         <div class="option-header">
-            <h3>Embed #<?php echo ($index + 1); ?></h3>
+            <h3>Embed #<?php if (!$is_comment) { echo ($index + 1); } elseif ($index === 0) { ?>Main<?php } else { ?>Reply<?php } ?></h3>
+            <?php if (!$is_comment) { ?>
             <button type="button" class="remove-embed button">Remove</button>
+            <?php } ?>
         </div>
         
         <div class="setting-group">
@@ -910,6 +1059,95 @@ class WPDEP_Admin implements WPDEP_Const {
         return ob_get_clean();
     }
   	
+  	public function FormEmbeddedStyleComment() {
+  	    $defaultsetarray = get_option(self::DEFAULT_SET_LIST_OPT, []);
+        $connection_type = $defaultsetarray['connection_type'] ?? 'webhook';
+        $embed_options = get_option(self::EMBEDDED_COMMENT_STRUCT_OPT, [
+            'embeded' => [
+                 [
+                      'author' => ['name' => '', 'url' => ''],
+                      'title' => '',
+                      'description' => '',
+                      'fields' => [],
+                      'image' => ['url' => ''],
+                      'color' => '',
+                      'timestamp' => '',
+                      'footer' => ['text' => ''],
+                      'components' => []
+                  ],
+                   [
+                        'author' => ['name' => '', 'url' => ''],
+                        'title' => '',
+                        'description' => '',
+                        'fields' => [],
+                        'image' => ['url' => ''],
+                        'color' => '',
+                        'timestamp' => '',
+                        'footer' => ['text' => ''],
+                        'components' => []
+                    ]
+            ]
+        ]);
+        if (count($embed_options['embeded']) === 1) {
+          $embed_options = [
+            'embeded' => [
+                 [
+                      'author' => ['name' => '', 'url' => ''],
+                      'title' => '',
+                      'description' => '',
+                      'fields' => [],
+                      'image' => ['url' => ''],
+                      'color' => '',
+                      'timestamp' => '',
+                      'footer' => ['text' => ''],
+                      'components' => []
+                  ],
+                   [
+                        'author' => ['name' => '', 'url' => ''],
+                        'title' => '',
+                        'description' => '',
+                        'fields' => [],
+                        'image' => ['url' => ''],
+                        'color' => '',
+                        'timestamp' => '',
+                        'footer' => ['text' => ''],
+                        'components' => []
+                    ]
+            ]
+        ];
+        }
+        
+        settings_errors('wpdep_embed_comment_options_messages');
+        ob_start();
+        ?>
+        <div class="wrap">
+            <h1>Discord Embed Comment Style Settings</h1>
+            <div class="wpdep-dashboard-widget">
+              <form method="post">
+                  <div class="embed-options-container">
+                      <div class="embed-section">
+                          <h2>Embed Settings</h2>
+                          
+                          <?php foreach ($embed_options['embeded'] as $index => $embed) : ?>
+                              <div class="embed-block" data-index="<?php echo $index; ?>">
+                                  <?php $this->render_embed_block($index, $embed, $connection_type, true); ?>
+                              </div>
+                          <?php endforeach; ?>
+                      </div>
+                  </div>
+                  
+                  <div class="form-actions">
+                      <button type="submit" name="save_wpdep_embed_comment_options" class="button button-primary">Save Style Settings</button>
+                  </div>
+                  
+                  <?php wp_nonce_field('save_wpdep_embed_comment_options_action', 'wpdep_embed_comment_options_nonce'); ?>
+              </form>
+            </div>
+        </div>
+        <?php
+        echo ob_get_clean();
+  	}
+  	
   	public function wpdep_wp_enqueue($hook) {
         $plugin_pages = [
             $this->admin_pages['main']['menu_slug'], 
@@ -972,6 +1210,77 @@ class WPDEP_Admin implements WPDEP_Const {
             $this->admin_assets_loaded = true;
         }
     }
-	
+    public function meta_boxes() {
+        add_meta_box(
+            'wpdep_featured',        
+            'Wpdep Settings',                        
+            [$this, 'render_wpdep_featured'],           
+            'post',                                
+            'side',                              
+            'core'                                 
+        );
+    }
+    
+    public function render_after_editor() {
+        global $post;
+        
+        if ($post->post_type !== 'post') return;
+        
+        echo '<div id="wpdep_featured_position" style="margin-top:20px;">';
+        $this->render_wpdep_featured($post);
+        echo '</div>';
+    }
+    
+    public function render_wpdep_featured($post) {
+        $featured_image = get_post_meta($post->ID, '_wpdep_featured_image', true);
+        $description = get_post_meta($post->ID, '_wpdep_custom_description', true); 
+        
+        wp_nonce_field('wpdep_featured_nonce_action', 'wpdep_featured_nonce');
+        ?>
+        <div style="padding: 10px; background: #fff; border: 1px solid #ccd0d4; box-shadow: 0 1px 1px rgba(0,0,0,0.04);">
+            <p>
+                <label for="wpdep_featured_image" style="display:block; margin-bottom:5px; font-weight:600;">
+                    <?php _e('Insert Featuring Image URL:', 'textdomain'); ?>
+                </label>
+                <input type="url" 
+                       id="wpdep_featured_image" 
+                       name="wpdep_featured_image" 
+                       value="<?php echo esc_url($featured_image); ?>" 
+                       style="width: 100%; padding: 8px;"
+                       placeholder="https://example.com">
+            </p>
+            <p>
+                <label for="wpdep_custom_description" style="display:block; margin-bottom:5px; font-weight:600;">
+                    <?php _e('Custom Description:', 'textdomain'); ?>
+                </label>
+                <textarea id="wpdep_custom_description" 
+                          class="widefat" 
+                          name="wpdep_custom_description"
+                          style="width:100%; min-height:100px; padding:8px;"><?php 
+                          echo esc_textarea($description); 
+                ?></textarea>
+            </p>
+        </div>
+        <?php
+    }
+
+    public function save_metabox($post_id) {
+        if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) return;
+        if (!isset($_POST['wpdep_featured_nonce']) || 
+            !wp_verify_nonce($_POST['wpdep_featured_nonce'], 'wpdep_featured_nonce_action')) {
+            return;
+        }
+        
+        if (!current_user_can('edit_post', $post_id)) return;
+        
+        if (isset($_POST['wpdep_featured_image'])) {
+            $sanitized_url = esc_url_raw($_POST['wpdep_featured_image']);
+            update_post_meta($post_id, '_wpdep_featured_image', $sanitized_url);
+        }
+        if (isset($_POST['wpdep_custom_description'])) {
+            $description = ($_POST['wpdep_custom_description']);
+            update_post_meta($post_id, '_wpdep_custom_description', $description);
+        }
+    }
 	
 }

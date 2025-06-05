@@ -105,6 +105,7 @@ class WPDEP_Discord implements WPDEP_Const {
     curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($POSTX, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
     $response = curl_exec($ch);
     $this->option->response[] = json_decode($response, true);
+    //file_put_contents(__DIR__.'/res.txt', var_export($this->option->response, true));
     curl_close($ch);
 	}
 	
