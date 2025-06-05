@@ -939,14 +939,14 @@ class WPDEP_Admin implements WPDEP_Const {
                     <?php if ($comp_index < 4) : ?>
                         <div class="component-group" data-index="<?php echo $comp_index; ?>">
                             
-                            <?php echo $this->render_component_block( $comp_index, $component );?>
+                            <?php echo $this->render_component_block($index,  $comp_index, $component );?>
                             
                         </div>
                     <?php endif; ?>
                 <?php endforeach; ?>
             </div>
             
-           <button type="button" class="add-component button">+ Add Button</button>
+           <button type="button" data-index="<?php echo $index; ?>" class="add-component button">+ Add Button</button>
         </div>
         <?php
     }
@@ -1009,14 +1009,14 @@ class WPDEP_Admin implements WPDEP_Const {
         return ob_get_clean();
     }
     
-    private function render_component_block($index, $component) {
+    private function render_component_block($index, $comp_index, $component) {
         ob_start();
         ?>
         <input type="hidden" name="embed_options[embeded][<?php echo $index; ?>][components][<?php echo $comp_index; ?>][type]" value="2">
         <div class="setting-group">
             <label>Button Label</label>
             <input type="text" 
-                   name="embed_options[embeded][0][components][<?php echo $index; ?>][label]" 
+                   name="embed_options[embeded][<?php echo $index; ?>][components][<?php echo $comp_index; ?>][label]" 
                    value="<?php echo esc_attr($component['label']); ?>" 
                    class="widefat">
             <p class="description">Text that appears on the button</p>
@@ -1024,7 +1024,7 @@ class WPDEP_Admin implements WPDEP_Const {
         <div class="setting-group">
             <label>Button URL</label>
             <input type="text" 
-                   name="embed_options[embeded][0][components][<?php echo $index; ?>][url]" 
+                   name="embed_options[embeded][<?php echo $index; ?>][components][<?php echo $comp_index; ?>][url]" 
                    value="<?php echo esc_attr($component['url']); ?>" 
                    class="widefat">
             <p class="description">URL the button will link to</p>
@@ -1032,7 +1032,7 @@ class WPDEP_Admin implements WPDEP_Const {
         <div class="setting-group">
             <label>Emoji ID</label>
             <input type="text" 
-                   name="embed_options[embeded][0][components][<?php echo $index; ?>][emoji][id]" 
+                   name="embed_options[embeded][<?php echo $index; ?>][components][<?php echo $comp_index; ?>][emoji][id]" 
                    value="<?php echo esc_attr($component['emoji']['id']); ?>" 
                    class="widefat">
             <p class="description">Numeric ID of the emoji</p>
@@ -1040,7 +1040,7 @@ class WPDEP_Admin implements WPDEP_Const {
         <div class="setting-group">
             <label>Emoji Name</label>
             <input type="text" 
-                   name="embed_options[embeded][0][components][<?php echo $index; ?>][emoji][name]" 
+                   name="embed_options[embeded][<?php echo $index; ?>][components][<?php echo $comp_index; ?>][emoji][name]" 
                    value="<?php echo esc_attr($component['emoji']['name']); ?>" 
                    class="widefat">
             <p class="description">Name of the emoji (e.g. "smile")</p>
@@ -1048,7 +1048,7 @@ class WPDEP_Admin implements WPDEP_Const {
         <div class="setting-group">
             <label>
                 <input type="checkbox" 
-                       name="embed_options[embeded][0][components][<?php echo $index; ?>][emoji][animated]" 
+                       name="embed_options[embeded][<?php echo $index; ?>][components][<?php echo $comp_index; ?>][emoji][animated]" 
                        value="1" <?php checked($component['emoji']['animated'], true); ?>>
                 Animated Emoji
             </label>
