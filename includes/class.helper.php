@@ -97,7 +97,7 @@ class WPDEP_Helper implements WPDEP_Const {
                 'url' => $this->FilterVar($embed['author']['url'])
             ],
             'title' => $this->FilterVar($embed['title']),
-            'description' => $this->discord_comment_filter($this->FilterVar($embed['description'])),
+            'description' => $this->FilterVar($embed['description']),
             'fields' => [],
             'image' => ['url' => trim($featured_image) ?: $this->clean_url($this->FilterVar($embed['image']['url'])) ],
             'color' => empty($embed['color']) ? null : $embed['color'],
@@ -163,6 +163,7 @@ class WPDEP_Helper implements WPDEP_Const {
 	}
 	
 	public function FilterVar( $string, $id = '' ) {
+	  $string = $this->discord_content_filter($string);
 	  if (!$this->is_filter_comment) {
 	    if ($this->post_id === null && $post === null) return $string;
 	  }
@@ -243,9 +244,13 @@ class WPDEP_Helper implements WPDEP_Const {
       return $string;
     } if (strpos(trim($template), 'default_message =>') === 0) {
       preg_match_all('/\[([^\]]*)\]/', $template, $matches);
+      if (empty($matches)) return $string;
       $defaultsetarray = get_option(self::DEFAULT_SET_LIST_OPT, array());
       $default_message = $defaultsetarray['default_message'] ?? '';
-      $string = str_replace('${'.$template.'}$', str_replace('%var_0%', $matches[1][0], $default_message), $string);
+      foreach ($matches[1] as $index => $msg) {
+        $default_message = str_replace('%var_'.$index.'%', $msg, $default_message);
+      }
+      $string = str_replace('${'.$template.'}$', $default_message, $string);
       return $string;
     } if (strpos(trim($template), 'custom_description =>') === 0) {
       preg_match_all('/\[([^\]]*)\]/', $template, $matches);
@@ -256,7 +261,35 @@ class WPDEP_Helper implements WPDEP_Const {
         $string = str_replace('${'.$template.'}$', $matches[1][0], $string);
       }
       return $string;
-    } 
+    } if (strpos(trim($template), 'custom_featured_image_or_custom_value =>') === 0) {
+      preg_match_all('/\[([^\]]*)\]/', $template, $matches);
+      $featured_image = get_post_meta($post->ID, '_wpdep_featured_image', true);
+      if (!empty($featured_image) && filter_var($featured_image, FILTER_VALIDATE_URL)) {
+        $string = str_replace('${'.$template.'}$', trim($featured_image), $string);
+      } else {
+        if (!empty($matches[0]) && filter_var($matches[1][0], FILTER_VALIDATE_URL)) {
+          $string = str_replace('${'.$template.'}$', trim($matches[0][1]), $string);
+        } if (!empty($matches[0]) && is_string($matches[1][0])){
+          $meta = get_post_meta($post->ID, $matches[1][0], true);
+          if (!empty($meta) && filter_var($meta, FILTER_VALIDATE_URL)) {
+            $string = str_replace('${'.$template.'}$', trim($meta), $string);
+          } if (!empty($meta) && is_int($meta)){
+            $thumb_id = get_post_thumbnail_id( $meta );
+            $url = wp_get_attachment_image_url( $thumb_id, 'full' );
+            $string = str_replace('${'.$template.'}$', !empty($url) ? $url : get_the_post_thumbnail_url($meta, 'full'), $string);
+          }
+        } if (!empty($matches[0]) && is_int($matches[1][0])){
+          $thumb_id = get_post_thumbnail_id( $matches[1][0] );
+          $url = wp_get_attachment_image_url( $thumb_id, 'full' );
+          $string = str_replace('${'.$template.'}$', !empty($url) ? $url : get_the_post_thumbnail_url($matches[1][0], 'full'), $string);
+        } if (!empty($matches[0]) && empty($matches[1][0])) {
+          $thumb_id = get_post_thumbnail_id( $post->ID );
+          $url = wp_get_attachment_image_url( $thumb_id, 'full' );
+          $string = str_replace('${'.$template.'}$', !empty($url) ? $url : get_the_post_thumbnail_url($post->ID, 'full'), $string);
+        }
+      } 
+      return $string;
+    }
     
   
     
@@ -378,31 +411,47 @@ class WPDEP_Helper implements WPDEP_Const {
 	    return $string;
 	}
 	
-	private function discord_comment_filter($comment_content) {
+	public function discord_content_filter($content) {
 	    // Space
-      $comment_content = str_replace('&nbsp;', ' ', $comment_content);
-      $comment_content = str_replace("\xc2\xa0", ' ', $comment_content);
+      $content = str_replace('&nbsp;', ' ', $content);
+      $content = str_replace("\xc2\xa0", ' ', $content);
       // HTML to Markdown
-      $comment_content = preg_replace('/<p\b[^>]*>(.*?)<\/p>/is', "$1\n\n", $comment_content);
-      $comment_content = preg_replace('/<br\s?\/?>/i', "\n", $comment_content);
-      $comment_content = preg_replace('/<(strong|b)>(.*?)<\/\1>/is', '**$2**', $comment_content);
-      $comment_content = preg_replace('/<(em|i)>(.*?)<\/\1>/is', '*$2*', $comment_content);
-      $comment_content = preg_replace('/<u>(.*?)<\/u>/is', '__$1__', $comment_content);
+      $content = preg_replace('/<p\b[^>]*>(.*?)<\/p>/is', "$1\n\n", $content);
+      $content = preg_replace('/<br\s?\/?>/i', "\n", $content);
+      $content = preg_replace('/<(strong|b)>(.*?)<\/\1>/is', '**$2**', $content);
+      $content = preg_replace('/<(em|i)>(.*?)<\/\1>/is', '*$2*', $content);
+      $content = preg_replace('/<u>(.*?)<\/u>/is', '__$1__', $content);
       
       //  blockquotes
-      $comment_content = preg_replace('/<blockquote>(.*?)<\/blockquote>/is', "> $1", $comment_content);
+      $content = preg_replace('/<blockquote>(.*?)<\/blockquote>/is', "> $1", $content);
       
       //  lists
-      $comment_content = preg_replace('/<ul\b[^>]*>(.*?)<\/ul>/is', "$1", $comment_content);
-      $comment_content = preg_replace('/<ol\b[^>]*>(.*?)<\/ol>/is', "$1", $comment_content);
-      $comment_content = preg_replace('/<li\b[^>]*>(.*?)<\/li>/is', "- $1\n", $comment_content);
+      $content = preg_replace('/<ul\b[^>]*>(.*?)<\/ul>/is', "$1", $content);
+      $content = preg_replace('/<ol\b[^>]*>(.*?)<\/ol>/is', "$1", $content);
+      $content = preg_replace('/<li\b[^>]*>(.*?)<\/li>/is', "- $1\n", $content);
       
-      $comment_content = strip_tags($comment_content);
-      $comment_content = preg_replace('/\n\s+\n/', "\n\n", $comment_content);
-      $comment_content = preg_replace('/[\s]+$/', '', $comment_content);
-      $comment_content = trim($comment_content, " \t\n\r\0\x0B\xC2\xA0");
+      $content = strip_tags($content);
+      $content = preg_replace('/\n\s+\n/', "\n\n", $content);
+      $content = preg_replace('/[\s]+$/', '', $content);
+      $content = trim($content, " \t\n\r\0\x0B\xC2\xA0");
       
-      return $comment_content;
+      // Htm Entity
+      $content = $this->decode_html_entities($content);
+      return $content;
+  }
+	
+	public function decode_html_entities($content) {
+      $content = html_entity_decode($content, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+      $content = preg_replace_callback('/&#\d+;/', function($m) {
+          return mb_convert_encoding($m[0], 'UTF-8', 'HTML-ENTITIES');
+      }, $content);
+      $content = preg_replace_callback('/&#(\d+);/', function($matches) {
+          return chr($matches[1]);
+      }, $content);
+      $content = preg_replace_callback('/&#x([a-fA-F0-9]+);/', function($matches) {
+          return hex2bin($matches[1]);
+      }, $content);
+      return $content;
   }
 	
 	private function get_post_content_dyn( $template, $post ) {
