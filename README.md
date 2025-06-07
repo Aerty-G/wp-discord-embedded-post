@@ -174,7 +174,7 @@ ${get_post_info => [],[thumbnail_url]}$
 **Quick Reference Table**:
 
 | Placeholder | Equivalent PHP | Sample Output |
-|-------------|----------------|---------------|
+|-------------|-----------------------|--------------------|
 | `${comment_content}$` | `$comment->comment_content` | `This Products Are Soo Good!!` |
 | `${comment_discord_timestamp}$` | `<t:UNIXTIME:R>` | `2 hours ago` |
 | `${comment_author}$` | `$comment->comment_author` | `John Doe` |
@@ -223,7 +223,11 @@ button:
 
 ## 📸 Screenshots
 
-![Settings Page]()  
+![Default Settings Page](https://raw.githubusercontent.com/Aerty-G/wp-discord-embedded-post/main/assets/images/01.jpg)  
+![Manage Variable Page](https://raw.githubusercontent.com/Aerty-G/wp-discord-embedded-post/main/assets/images/02.jpg)
+![Embed Style Setting Page](https://raw.githubusercontent.com/Aerty-G/wp-discord-embedded-post/main/assets/images/03.jpg)
+![Embed Comment Style Page](https://raw.githubusercontent.com/Aerty-G/wp-discord-embedded-post/main/assets/images/04.jpg)
+![Category Settings Page](https://raw.githubusercontent.com/Aerty-G/wp-discord-embedded-post/main/assets/images/05.jpg)
 *Plugin configuration panel*
 
 ![Embed Example]()  
