@@ -30,7 +30,7 @@ How The Proceed going?
 
 ## 🔌 Installation
 
-1. Download the latest version from the [Releases page](#)
+1. Download the latest version from the [Releases page](https://github.com/Aerty-G/wp-discord-embedded-post/releases) or The lastest in blob branch main [Here](https://github.com/Aerty-G/wp-discord-embedded-post/archive/refs/heads/main.zip)
 2. Navigate to WordPress Admin → Plugins → Add New
 3. Click "Upload Plugin" and select the downloaded ZIP file
 4. Activate the plugin after installation
