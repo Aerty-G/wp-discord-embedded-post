@@ -241,3 +241,8 @@ We welcome contributions! Please fork the repository and submit pull requests.
 - [ ] More Platform integration
 - [ ] Make The Frontend Better
 - [ ] Make Cache System For Better Performance
+
+
+## License GPL v2
+
+![License: GPL v2 or later](https://img.shields.io/badge/License-GPL%20v2%20%7C%20later-blue.svg)

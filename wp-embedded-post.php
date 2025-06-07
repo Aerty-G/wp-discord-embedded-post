@@ -12,6 +12,9 @@
  * Author URI:  https://github.com/Aerty-G
  * Plugin URI: https://github.com/Aerty-G/wp-discord-embedded-post
  * Requires PHP: 7.4
+ * License:     GPL-2.0-or-later
+ * License URI: https://www.gnu.org/licenses/gpl-2.0.html
+ * Text Domain: wp-embedded-post
  */
  
  if ( ! defined( 'ABSPATH' ) ) {
