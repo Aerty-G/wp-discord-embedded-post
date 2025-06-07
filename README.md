@@ -1,6 +1,7 @@
 # WordPress Embedded Post Plugin
 
 A powerful WordPress plugin that automatically sends rich embedded messages to Discord channels when your posts are published.
+And now also send new comments as embedded to discord!!
 
 ## ✨ Features
 
@@ -10,15 +11,22 @@ A powerful WordPress plugin that automatically sends rich embedded messages to D
 - **Multiple Integration Options**: Supports both Discord bots and webhooks
 - **Rich Embeds**: Create beautiful, formatted Discord messages
 - **Customizable Components**: Buttons, fields, and more
+- **Filter To Markdown**: Filter html tag and other to markdown. eg `<strong>` to `**`
 
 ## 🚀 How It Works
 
-The plugin hooks into WordPress's `transition_post_status` action to detect when posts are published. It then:
+The plugin hooks into 3-type hooks/action.
+1. `transition_post_status` Default action thats executed when the post move from one status to other status.
+2. `${old_status}_to_${new_status}` Action that's specifically hooks when specific status change to other specific status. eg `draft_to_publish`.
+3. `save_post` Action that's executed when user save the post to database, or when the user press publish button when they add new post.
+I Personally Recommended you choose `save_post`. 
 
+How The Proceed going?
 1. Checks if the post belongs to a monitored category
 2. Constructs a rich embed message using your templates
 3. Sends the message to your specified Discord channel
 4. Supports both bot and webhook integration methods
+
 
 ## 🔌 Installation
 
@@ -52,12 +60,25 @@ The plugin hooks into WordPress's `transition_post_status` action to detect when
 7. Now you have a id of the role you have to tag
 8. Put this id (Example: `<@&12345678912>`) to whenever you want like the default tag or directly in Embedded or the main message
 
+### Post Section Setup
+1. Go to default settings 
+2. Fill the requirement eg. Bot Token or Webhook URL
+3. Go to Embedded Style
+4. Customize Your Embedded
+5. Go to Category Settings 
+6. Fill The requirement eg. Categories, Default Messages (optional) etc.
+
+### Comment Section Setup
+1. First go to default settings
+2. Select comment service eg. WordPress, Wpdiscuz, Disqus(still on development)
+3. Insert webhooks or Bot Token and the channel id
+
 ## 📝 Placeholder System
 
 The plugin offers powerful placeholders to customize your embeds:
 
 ### Dynamic Placeholders
-Available in:
+Available in almost every section in embedded input:
 - Main message
 - Embed author/title/description
 - Field names/values
@@ -104,13 +125,13 @@ ${get_post_info => [],[thumbnail_url]}$
 ```
 
 **Output Samples**:
-```markdown
+
 | Template | Sample Output |
 |----------|---------------|
 | `${...[],[post_date]}$` | `2023-07-15 14:30:00` |
 | `${...[42],[post_title]}$` | `Summer Sale Event` |
 | `${...[event_ref],[thumbnail_url]}$` | `https://example.com/image.jpg` |
-```
+
 
 **Available Info:**
 - `post_author` - Post author name
@@ -139,6 +160,7 @@ ${get_post_info => [],[thumbnail_url]}$
 - `${permalink}$` - Post URL
 - `${author}$` - Post author
 - `${post_content}$` - Post Content
+- `${post_content:mode:much}$` - Post Content, mode => `0` for word, `1` for characters, much => how much in number
 - `${timestamp}$` - Publication time (Discord format)
 - `${post_title}$` - Post title
 - `${thumbnail_url}$` - Featured image
@@ -146,6 +168,31 @@ ${get_post_info => [],[thumbnail_url]}$
 - `${post_type}$` - Post Type
 - `${post_name}$` - Post slug
 - `${post_category}$` - Post Category 
+
+### Default Placeholder For Comments Embedded 
+
+**Quick Reference Table**:
+
+| Placeholder | Equivalent PHP | Sample Output |
+|-------------|----------------|---------------|
+| `${comment_content}$` | `$comment->comment_content` | `This Products Are Soo Good!!` |
+| `${comment_discord_timestamp}$` | `<t:UNIXTIME:R>` | `2 hours ago` |
+| `${comment_author}$` | `$comment->comment_author` | `John Doe` |
+| `${comment_post_title}$` | `$comment->comment_post_ID => get_post() => $post->post_title` | `Nikke New Shoes` |
+
+**Available Default Placeholders:**
+- `${comment_permalink}$` - Comment URL
+- `${comment_author}$` - Comment author
+- `${comment_content}$` - Comment Content
+- `${comment_date}$` - Date Of the Comment
+- `${timestamp}$` - Publication time 
+- `${comment_discord_timestamp}$` - Timestamp will show like `2 day ago`
+- `${comment_post_title}$` - Post title of the comment
+- `${comment_parent_content}$` - The Main Comment Content if the current Comment was a reply
+- `${comment_parent_author}$` - The Main Comment Author if the current Comment was a reply
+- `${comment_parent_date}$` - The Main Comment Date if the current Comment was a reply
+- `${comment_parent_permalink}$` - The Main Comment Permalink if the current Comment was a reply
+- `${comment_parent_post_title}$` - The Main Comment Post Title if the current Comment was a reply
 
 ## 🛠️ Advanced Usage
 

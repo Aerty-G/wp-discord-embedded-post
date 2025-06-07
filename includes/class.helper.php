@@ -66,7 +66,7 @@ class WPDEP_Helper implements WPDEP_Const {
 	        
 	        $final['options'][] = [
             'style_id' => $dt['style_id'],
-	          'main_message' => $this->FilterVar($dt['main_message']),
+	          'main_message' => $this->FilterVar($dt['main_message'], false),
 	          'channel_id' => $dt['channel_id'],
 	          'bot_token' => $dt['bot_token'],
 	          'webhook_url' => $dt['webhook_url'],
@@ -162,14 +162,13 @@ class WPDEP_Helper implements WPDEP_Const {
 	  return isset( $styles['embeded'][$id] ) ? $styles['embeded'][$id] : false;
 	}
 	
-	public function FilterVar( $string, $id = '' ) {
-	  $string = $this->discord_content_filter($string);
+	public function FilterVar( $string, $markdown = true) {
 	  if (!$this->is_filter_comment) {
 	    if ($this->post_id === null && $post === null) return $string;
 	  }
 	  $original = $string;
 	  try {
-  	  if ( (!$id || empty($id)) && !$this->is_filter_comment ) {
+  	  if ( !$this->is_filter_comment ) {
   	    $post = $this->post;
   	    $id = $post->ID;
   	  }
@@ -186,6 +185,9 @@ class WPDEP_Helper implements WPDEP_Const {
       	  endforeach;
       	endforeach;
   	  endif;
+  	  if ($markdown) {
+  	    $string = $this->discord_content_filter($string);
+  	  }
   	  return $string;
 	  } catch (Exception $e) {
        error_log('FilterVar error: ' . $e->getMessage());
@@ -273,12 +275,12 @@ class WPDEP_Helper implements WPDEP_Const {
           $meta = get_post_meta($post->ID, $matches[1][0], true);
           if (!empty($meta) && filter_var($meta, FILTER_VALIDATE_URL)) {
             $string = str_replace('${'.$template.'}$', trim($meta), $string);
-          } if (!empty($meta) && is_int($meta)){
+          } if (!empty($meta) && is_numeric($meta)){
             $thumb_id = get_post_thumbnail_id( $meta );
             $url = wp_get_attachment_image_url( $thumb_id, 'full' );
             $string = str_replace('${'.$template.'}$', !empty($url) ? $url : get_the_post_thumbnail_url($meta, 'full'), $string);
           }
-        } if (!empty($matches[0]) && is_int($matches[1][0])){
+        } if (!empty($matches[0]) && is_numeric($matches[1][0])){
           $thumb_id = get_post_thumbnail_id( $matches[1][0] );
           $url = wp_get_attachment_image_url( $thumb_id, 'full' );
           $string = str_replace('${'.$template.'}$', !empty($url) ? $url : get_the_post_thumbnail_url($matches[1][0], 'full'), $string);
@@ -374,9 +376,12 @@ class WPDEP_Helper implements WPDEP_Const {
 	        $parent_post = get_post($id_p);
 	        $string = str_replace('${'.$template.'}$', $parent_post->post_title, $string);
 	        break;
-	      case 'comment_discord_timestamp' : 
-	        
+	      case 'comment_timestamp' : 
 	        $string = str_replace('${'.$template.'}$', strtotime($comment->comment_date), $string);
+	        break;
+	      case 'comment_discord_timestamp' :
+	        $timestamp = '<t:'.$this->getTimeStamp().':R>';
+	        $string = str_replace('${'.$template.'}$', $timestamp, $string);
 	        break;
 	      case 'comment_permalink' : 
 	        $permalink = get_comment_link( $comment->comment_ID );
@@ -397,7 +402,7 @@ class WPDEP_Helper implements WPDEP_Const {
 	      case 'comment_parent_id' :
 	        $string = str_replace('${'.$template.'}$', $comment->comment_parent, $string);
 	        break;
-	      case 'comment_pqrent_permalink' :
+	      case 'comment_parent_permalink' :
 	        $permalink = get_comment_link( $comment->comment_ID );
 	        $string = str_replace('${'.$template.'}$', $permalink, $string);
 	        break;
