@@ -4,10 +4,10 @@
  *
  * @author      Aerty-G
  *
- * Plugin Name: Wp Discord Embedded Post
+ * Plugin Name: WP Discord Embedded Post
  * Description: A Discord integration that sends a message on your desired Discord server and channel for every new post published.
  *
- * Version:     2.0.5
+ * Version:     2.0.6
  * Author:      Aerty-G
  * Author URI:  https://github.com/Aerty-G
  * Plugin URI: https://github.com/Aerty-G/wp-discord-embedded-post
@@ -25,7 +25,7 @@ require_once( 'includes/class.implements.php' );
 
 // More Const/Define Was In "includes/class.implements.php"
 define( 'WPDEP_IS_DEBUG', false );
-define( 'WPDEP_VERSION', '2.0.5' );
+define( 'WPDEP_VERSION', '2.0.6' );
 
 
 
@@ -87,6 +87,7 @@ class WP_Discord_Embedded_Post implements WPDEP_Const {
 	  } if (isset($defaultsetarray['hooks']) && $defaultsetarray['hooks'] === 'hooks_3') {
 	    add_action( 'post_submitbox_misc_actions', [$this, 'render_checkbox_notify'] );
 	    add_action( 'save_post', [$this, 'Hooks3Handle'], 10, 3 );
+	    add_action( 'future_to_publish', array($this, 'Hooks2Handle'), 10, 1);
 	  }
 	}
 	
@@ -131,10 +132,17 @@ class WP_Discord_Embedded_Post implements WPDEP_Const {
 	  $this->HandleNewPublishPost( $post );
 	}
 	
+	public function HooksForFuture() {
+	  
+	}
+	
 	public function Hooks3Handle($post_id, $post, $update) {
     if ( defined('DOING_AUTOSAVE') && DOING_AUTOSAVE ) return;
     if ( wp_is_post_revision( $post_id ) ) return;
     if ( ! current_user_can( 'edit_post', $post_id ) ) return;
+    if ( $post->post_status !== 'publish') return;
+    $post_test = get_post($post_id);
+    if ( $post_test->post_status !== 'publish') return;
     $is_marked_as_new = isset( $_POST['_wpdep_notify_discord'] ) && $_POST['_wpdep_notify_discord'] === '1';
     if ( $is_marked_as_new ) {
         update_post_meta( $post_id, '_wpdep_notify_discord', 1 );
