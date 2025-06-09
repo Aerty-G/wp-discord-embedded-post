@@ -140,9 +140,9 @@ class WP_Discord_Embedded_Post implements WPDEP_Const {
     if ( defined('DOING_AUTOSAVE') && DOING_AUTOSAVE ) return;
     if ( wp_is_post_revision( $post_id ) ) return;
     if ( ! current_user_can( 'edit_post', $post_id ) ) return;
-    if ( $post->post_status !== 'publish') return;
+    if ( $post->post_status !== 'publish' ) return;
     $post_test = get_post($post_id);
-    if ( $post_test->post_status !== 'publish') return;
+    if ( $post_test->post_status !== 'publish' ) return;
     $is_marked_as_new = isset( $_POST['_wpdep_notify_discord'] ) && $_POST['_wpdep_notify_discord'] === '1';
     if ( $is_marked_as_new ) {
         update_post_meta( $post_id, '_wpdep_notify_discord', 1 );
