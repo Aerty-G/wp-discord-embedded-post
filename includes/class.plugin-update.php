@@ -5,9 +5,9 @@ class WPDEP_Updater {
     private $plugin_version;
     private $update_url;
 
-    public function __construct($version) {
+    public function __construct($version = null) {
         $this->plugin_slug = 'wp-embedded-post';
-        $this->plugin_version = $version;
+        $this->plugin_version = $version ?? WPDEP_VERSION;
         $this->update_url = 'https://raw.githubusercontent.com/Aerty-G/wp-discord-embedded-post/refs/heads/main/update.json';
 
         add_filter('pre_set_site_transient_update_plugins', [$this, 'check_for_update']);

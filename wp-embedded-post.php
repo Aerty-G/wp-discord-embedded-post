@@ -21,14 +21,20 @@
 	exit;
 }
 
-require_once( 'includes/class.implements.php' );
 
-// More Const/Define Was In "includes/class.implements.php"
+
+
 define( 'WPDEP_IS_DEBUG', false );
 define( 'WPDEP_VERSION', '2.0.6' );
+define( 'WPDEP_PATH_DIR' , __DIR__ );
+define( 'WPDEP_PATH_URL' , plugin_dir_url(__FILE__) );
+define( 'WPDEP_PATH_CACHE_DIR' , WP_CONTENT_DIR.'/cache/archangel/discord-embedded');
+if ( !file_exists( WPDEP_PATH_CACHE_DIR ) ) {
+    mkdir( WPDEP_PATH_CACHE_DIR , 0755 , true );
+}
 
-
-
+// More Const/Define Was In "includes/class.implements.php"
+require_once( WPDEP_PATH_DIR.'/includes/class.implements.php' );
 
 
 class WP_Discord_Embedded_Post implements WPDEP_Const {
@@ -55,12 +61,12 @@ class WP_Discord_Embedded_Post implements WPDEP_Const {
 	}
 	
 	public function DefineAssets() {
-    require_once( 'includes/class.implements.php' );
-    require_once( 'includes/class.admin.php' );
-    require_once( 'includes/class.discord.php' );
-    require_once( 'includes/class.helper.php' );
-    require_once( 'includes/class.plugin-update.php' );
-    require_once( 'includes/class.comment.php' );
+    require_once( WPDEP_PATH_DIR.'/includes/class.implements.php' );
+    require_once( WPDEP_PATH_DIR.'/includes/class.admin.php' );
+    require_once( WPDEP_PATH_DIR.'/includes/class.discord.php' );
+    require_once( WPDEP_PATH_DIR.'/includes/class.helper.php' );
+    require_once( WPDEP_PATH_DIR.'/includes/class.plugin-update.php' );
+    require_once( WPDEP_PATH_DIR.'/includes/class.comment.php' );
 	}
 	
 	public function late_init() {
