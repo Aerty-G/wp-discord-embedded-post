@@ -348,7 +348,7 @@ class WPDEP_Admin implements WPDEP_Const {
         add_settings_error('wpdep_category_options_messages', 'wpdep_category_options_message', __('Category options saved successfully!', 'wp-discord-embedded-post'), 'success');
     }
   	public function FormMain() {
-  	      echo file_get_contents(__DIR__.'/documentation.html');
+  	      echo file_get_contents( WPDEP_PATH_DIR.'/includes/documentation.html' );
   	}
   	
   	public function FormDefaultSet() {
@@ -406,7 +406,7 @@ class WPDEP_Admin implements WPDEP_Const {
                                     <label>
                                         <input type="radio" name="default_discord_settings[hooks]" 
                                                value="hooks_3" <?php checked($settings['hooks'], 'hooks_3'); ?>>
-                                        Hooks 3
+                                        Hooks 3 (Recommended)
                                     </label>
                             </div>
                         </div>
@@ -1172,16 +1172,16 @@ class WPDEP_Admin implements WPDEP_Const {
         if (!$this->admin_assets_loaded) {
             wp_enqueue_style(
                 'wp-discord-embedded-post',
-                plugins_url('assets/css/admin.css', dirname(__FILE__)), 
+                WPDEP_PATH_URL . 'assets/css/admin.css',
                 [],
-                filemtime(plugin_dir_path(dirname(__FILE__)) . 'assets/css/admin.css')
+                filemtime(WPDEP_PATH_DIR . '/assets/css/admin.css')
             );
     
             wp_enqueue_script(
                 'wp-discord-embedded-post',
-                plugins_url('assets/js/admin.js', dirname(__FILE__)), 
+                WPDEP_PATH_URL . 'assets/js/admin.js',
                 ['jquery'],
-                filemtime(plugin_dir_path(dirname(__FILE__)) . 'assets/js/admin.js'),
+                filemtime(WPDEP_PATH_DIR . '/assets/js/admin.js'),
                 true
             );
     
@@ -1196,11 +1196,11 @@ class WPDEP_Admin implements WPDEP_Const {
             if ($load_select2) {
                 wp_enqueue_style(
                     'select2',
-                    'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css'
+                    WPDEP_PATH_URL . 'assets/css/select2.min.css'
                 );
                 wp_enqueue_script(
                     'select2',
-                    'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js',
+                    WPDEP_PATH_URL . 'assets/js/select2.min.js',
                     ['jquery'],
                     '4.1.0-rc.0',
                     true
