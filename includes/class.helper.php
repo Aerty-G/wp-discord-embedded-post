@@ -250,6 +250,10 @@ class WPDEP_Helper implements WPDEP_Const {
       $defaultsetarray = get_option(self::DEFAULT_SET_LIST_OPT, array());
       $default_message = $defaultsetarray['default_message'] ?? '';
       foreach ($matches[1] as $index => $msg) {
+        if (strpos(trim($msg), 'extract_') === 0) {
+          $msg = str_replace('extract_', '', $msg);
+          $msg = $this->Default_Var_Extra_Info('${'.$msg.'}$',$msg);
+        }
         $default_message = str_replace('%var_'.$index.'%', $msg, $default_message);
       }
       $string = str_replace('${'.$template.'}$', $default_message, $string);
@@ -293,9 +297,20 @@ class WPDEP_Helper implements WPDEP_Const {
       return $string;
     }
     
-  
+    return $ths->Default_Var_Extra_Info($string, $template);
     
-  	  switch ($template) :
+  	  
+	}
+	
+	private function Default_Var_Extra_Info($string, $template) {
+  	  if (!$this->is_filter_comment) {
+  	    if ($this->post_id === null && $post === null) return $string;
+  	  }
+  	  if ($this->is_filter_comment) {
+        return $this->CommentInfo( $string, $template);
+      }
+  	  $post = $this->post;
+	    switch ($template) :
   	    case 'author' :
   	      $string = str_replace('${'.$template.'}$', get_the_author_meta('display_name', $post->post_author), $string);
   	      break;
@@ -316,6 +331,8 @@ class WPDEP_Helper implements WPDEP_Const {
   	    case 'post_type' :
 	        $string = str_replace('${'.$template.'}$', $post->post_type, $string);
 	        break;
+	      case 'post_date' :
+	        $string = str_replace('${'.$template.'}$', $post->post_date, $string);
 	      case 'post_status' :
 	        $string = str_replace('${'.$template.'}$', $post->post_status, $string);
 	        break;
