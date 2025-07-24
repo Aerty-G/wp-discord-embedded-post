@@ -97,7 +97,7 @@ if in default settings you set,
 and in your category setting or embedded setting you set like this.
 '${default_message => [@everyone,extract_post_title,extract_post_date]}'
 the results will be like this.
-'hello everyone Current Post Title MotoGP has updated at 2025-07-23 14:30:00'
+'hello @everyone Current Post Title MotoGP has updated at 2025-07-23 14:30:00'
 ```
 **Available Info**:
 - `author` - Post author name
