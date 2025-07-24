@@ -85,6 +85,35 @@ Available in almost every section in embedded input:
 - Button labels
 - Footer text
 
+### `default_message` Standard
+**Syntax**:
+`${default_message}$` or `${default_message => [var_1,var_2, and more]}$`
+
+**Example**:
+```markdown
+if in default settings you set, 
+'hello %var_0% Current Post Title %var_1% has updated at %var_2%'
+~This is just example, ignore my grammar 
+and in your category setting or embedded setting you set like this.
+'${default_message => [@everyone,extract_post_title,extract_post_date]}'
+the results will be like this.
+'hello everyone Current Post Title MotoGP has updated at 2025-07-23 14:30:00'
+```
+**Available Info**:
+- `author` - Post author name
+- `post_date` - Publication date
+- `post_title` - Post title
+- `thumbnail_url` - Featured image URL
+- `permalink` - Post URL
+- `post_name` - Post slug
+- `post_content` - Post Content
+- `post_status` - Post Current Status
+- `post_type` - Post Type
+- `post_category` - Post Category.
+
+Don't Forget to put `extract_` when you want to get the post info. 
+And `%var_0%` is can be more than 3.
+
 #### `get_post_meta` Deep Dive
 
 **Syntax**:  
