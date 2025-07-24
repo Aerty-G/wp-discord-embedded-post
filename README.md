@@ -1,3 +1,5 @@
+![Banner](https://raw.githubusercontent.com/Aerty-G/wp-discord-embedded-post/refs/heads/main/assets/images/simple-banner.png)
+![Icon](https://raw.githubusercontent.com/Aerty-G/wp-discord-embedded-post/refs/heads/main/assets/images/simple-icon.svg)
 # WordPress Embedded Post Plugin
 
 A powerful WordPress plugin that automatically sends rich embedded messages to Discord channels when your posts are published.
