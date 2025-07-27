@@ -6,8 +6,8 @@
   "author_homepage": "https://github.com/Aerty-G",
   "homepage": "https://github.com/Aerty-G/wp-discord-embedded-post",
   "download_url": "https://github.com/Aerty-G/wp-discord-embedded-post/releases/download/v2.1.1/wp-embedded-post.zip",
-  "requires": "7.4",
-  "tested": "7.4",
+  "requires": "6.0",
+  "tested": "6.0",
   "last_updated": "2025-07-24",
   "sections": {
     "description": "A Discord integration that sends a message on your desired Discord server and channel for every new post published.",
