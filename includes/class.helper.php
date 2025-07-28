@@ -297,7 +297,7 @@ class WPDEP_Helper implements WPDEP_Const {
       return $string;
     }
     
-    return $ths->Default_Var_Extra_Info($string, $template);
+    return $this->Default_Var_Extra_Info($string, $template);
     
   	  
 	}
